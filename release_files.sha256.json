@@ -41,8 +41,8 @@
   },
   {
     "path": "README.md",
-    "bytes": 6495,
-    "sha256": "4f8203e746e3f74a8c5626047327cc8a703971ace22fab2773209804d577e6f3"
+    "bytes": 6498,
+    "sha256": "ad2011600aa2d94a287533b263181b06b7cada7a0c4b69d4d375ca0ae3b83a5e"
   },
   {
     "path": "styles.css",
@@ -246,8 +246,8 @@
   },
   {
     "path": "data/templates/README.md",
-    "bytes": 1144,
-    "sha256": "258d829957d17eaea362ff550173df8a1ccde72ce7a38b8b8b55d9944b96abc4"
+    "bytes": 1206,
+    "sha256": "95b75c35f1fda28d5847f08b1ac6d8c1f3b85ac92da12c97299526cfca675c13"
   },
   {
     "path": "data/templates/solar_resources.csv",
@@ -261,8 +261,8 @@
   },
   {
     "path": "deploy/部署与验收说明.txt",
-    "bytes": 4339,
-    "sha256": "b25dd7b75b6e6b6b9ee779e2c2f921dbcaadf350b324c9a40a76cf606aeb0106"
+    "bytes": 4439,
+    "sha256": "2dc42cee315b9e2e66be97dc62ca4069296dfd78e2452db5c63cff627e5ee3b5"
   },
   {
     "path": "deploy/compose.yaml",
@@ -302,7 +302,7 @@
   {
     "path": "docs/API与平台操作清单.md",
     "bytes": 3701,
-    "sha256": "b1c7efa0cce23b00e0465bc1dcf73c82d73a16647afb85e6193e60600c6afb1c"
+    "sha256": "3f1df5348a0b68d869ac79459feb844cd0ef3c96ffcc9fcea2240540409fa881"
   },
   {
     "path": "数据收集包/02_能耗账单与电价/全国_生态环境部国家统计局_公告2024年第33号_电力二氧化碳排放因子公告全文_2022年数据_2024-12-26.html",

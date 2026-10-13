@@ -11,19 +11,19 @@ Windows运行
 2 打开http://127.0.0.1:8000，可载入青禾假设并进行Python测算，下载已生成的假设方案PDF。
 3 运行configure-keys.bat，在本地隐藏输入账号持有人提供的有效DeepSeek及百炼密钥和Base URL。配置写backend/.env，模板不含真实密钥。
 4 新机器或新模型必须审核并入库自己的资料。以下命令在项目根目录执行：
-   python backend/scripts/check_readiness.py --json
-   python backend/scripts/ingest_knowledge.py --audit-only
+   .\.venv\Scripts\python.exe backend/scripts/check_readiness.py --json
+   .\.venv\Scripts\python.exe backend/scripts/ingest_knowledge.py --audit-only
    前两步离线、不发送正文、不调用模型。
 5 审核来源、文件内容、权限与SHA256后，显式选定三份公开样本：
-   python backend/scripts/ingest_knowledge.py --reviewed --document-id DOC-FAC-0001 --document-id DOC-POL-0002 --document-id DOC-POL-0004
+   .\.venv\Scripts\python.exe backend/scripts/ingest_knowledge.py --reviewed --document-id DOC-FAC-0001 --document-id DOC-POL-0002 --document-id DOC-POL-0004
    此步把正文发送到百炼产生费用。未经审核或指纹不匹配的文件阻断。结果按实际返回值记录，不能事先把计划分块数当作已经写入。
-6 可选联通检查：python backend/scripts/check_connectivity.py --online。仅发送公开测试短句，会产生调用费用。
+6 可选联通检查：.\.venv\Scripts\python.exe backend/scripts/check_connectivity.py --online。仅发送公开测试短句，会产生调用费用。
 7 检索、问答与完整PDF发送当前问题、输入及相关片段给已配置模型服务。图片另行授权；本轮没有完成授权照片效果验收。
 
 离线与错误处理
 不配置密钥仍可运行本地确定性计算和固定示例PDF下载。云端或RAG未就绪时相关功能显式提示。
 完整报告需要至少一个可计算方案与非空知识库。实际数值由后端重新计算，生成记录保存在未公开的storage/reports。
-联调脚本支持自己的访问地址：python backend/scripts/verify_customer_demo.py --base-url http://127.0.0.1:8000。
+联调脚本支持自己的访问地址：.\.venv\Scripts\python.exe backend/scripts/verify_customer_demo.py --base-url http://127.0.0.1:8000。
 
 Docker备选
 本机没有Docker，以下配置已经代码审查但未构建或远程验收。

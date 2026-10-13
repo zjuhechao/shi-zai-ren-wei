@@ -64,7 +64,7 @@ EMBEDDING_BATCH_SIZE=10
 
 ## 四、RAG入库
 
-v0.5配置完成后，推荐启动网页，在“技术状态”中选择“同步已核对资料”。系统只同步审核名单内且指纹一致的资料，未变化的已入库文档不会重复生成向量。命令行必须明确指定文档ID，例如仅处理已核对的单份文件：
+v0.6配置完成后，推荐启动网页，在“技术状态”中选择“同步已核对资料”。系统只同步审核名单内且指纹一致的资料，未变化的已入库文档不会重复生成向量。命令行必须明确指定文档ID，例如仅处理已核对的单份文件：
 
 ```powershell
 .\.venv\Scripts\python.exe backend\scripts\ingest_knowledge.py --reviewed --document-id DOC-FAC-0001

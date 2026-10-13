@@ -73,4 +73,4 @@ git log -1 --format=fuller
 
 当前没有远程地址。后续由团队在选定的 Git 平台创建仓库并配置真实 remote 后再推送；不要提交 `backend/.env`、`.venv`、`storage` 或私有项目资料。源码权属与团队提交承诺由团队确认，本副本没有擅自附加开源许可或替团队签署授权。
 
-`源码仓库_v0.6.bundle` 是同一次初始提交的 Git 恢复备份。若压缩工具省略隐藏的 `.git`，可在另一个空目录执行 `git clone --branch main 路径/源码仓库_v0.6.bundle 室在人为_恢复源码`，恢复相同提交和全部已跟踪文件。恢复不会包含密钥、原机 Chroma 数据或尚未配置的 remote。
+`源码仓库_v0.6.bundle` 是当前发布历史的 Git 恢复备份。若压缩工具省略隐藏的 `.git`，可在另一个空目录执行 `git clone --branch main 路径/源码仓库_v0.6.bundle 室在人为_恢复源码`，恢复当前发布历史和全部已跟踪文件。恢复不会包含密钥、原机 Chroma 数据或尚未配置的 remote。
