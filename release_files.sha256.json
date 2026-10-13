@@ -21,8 +21,8 @@
     },
     {
       "path": "README.md",
-      "bytes": 11686,
-      "sha256": "32fa24ad0e7991e269edaa8c5c87aa96587208a27196d26f611edaf7f4d54743"
+      "bytes": 12215,
+      "sha256": "959ae843af98b3d1cf06184e76d0211e89e78d2404b90958d56d1c8a98d02e1b"
     },
     {
       "path": "app.js",
@@ -296,8 +296,8 @@
     },
     {
       "path": "docs/下载后运行与配置.md",
-      "bytes": 19295,
-      "sha256": "4e586e76ebbab17ad84e404f4dd9b0e22ed10d601af75b95ff266ebbdd1c699a"
+      "bytes": 19425,
+      "sha256": "7a64ec980ea72331851cea12a36dd1b02d15a880e6db92d023a31159bea08e6e"
     },
     {
       "path": "docs/技术架构_v0.6.1.svg",
