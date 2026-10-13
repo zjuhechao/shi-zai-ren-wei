@@ -1,0 +1,25 @@
+{
+  "review_date": "2026-10-13",
+  "scope": "校赛无密钥源码的最少公开政府资料示例，三份文件。正文审核指纹仅用于变更检测；云端调用仍须使用者确认。",
+  "documents": [
+    {
+      "document_id": "DOC-FAC-0001",
+      "checksum": "d6a63be72587e4fa80396b8c53fc83fa888adc2a4e2d1c8b5da91c0505f7dd2b",
+      "source_url": "https://www.mee.gov.cn/xxgk2018/xxgk/xxgk01/202412/t20241226_1099413.html",
+      "note": "仅此公开归档文件纳入源码演示白名单；审核清单保留字节指纹，不构成新用户的云端上传授权。"
+    },
+    {
+      "document_id": "DOC-POL-0002",
+      "checksum": "4a656b6a1080324100ea4f919adb3b5f35759f464a28bd03e48ebbf7c2fdeb7c",
+      "source_url": "https://zfgb.hangzhou.gov.cn/11/103220263/t120220263034/530278.shtml",
+      "note": "仅此公开归档文件纳入源码演示白名单；审核清单保留字节指纹，不构成新用户的云端上传授权。"
+    },
+    {
+      "document_id": "DOC-POL-0004",
+      "checksum": "97c3d42dbdb99b1c9bd45ef92cf8f945023924ea8d48b516a96e1b9ad88935ed",
+      "source_url": "https://www.gov.cn/lianbo/difang/202404/content_6961110.htm",
+      "note": "仅此公开归档文件纳入源码演示白名单；审核清单保留字节指纹，不构成新用户的云端上传授权。"
+    }
+  ],
+  "excluded": {}
+}

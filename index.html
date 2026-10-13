@@ -1,0 +1,417 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta
+      name="description"
+      content="既有建筑低碳改造智能决策体的本地可交互原型"
+    />
+    <title>室在人为 | 低碳改造智能决策体</title>
+    <link rel="stylesheet" href="styles.css?v=0.6.0" />
+  </head>
+  <body>
+    <header class="site-header">
+      <div>
+        <p class="eyebrow">LOW CARBON · BUILDING INTELLIGENCE</p>
+        <h1>室在人为</h1>
+        <p class="subtitle">既有建筑低碳改造 · 客户演示工作台</p>
+      </div>
+      <div class="header-meta"><span class="demo-badge">LOCAL DEMO / v0.6</span><p class="boundary">完整前期方案 PDF · 不替代施工图与正式工程审查。</p></div>
+    </header>
+
+    <main>
+      <nav class="page-nav" aria-label="页面导航">
+        <a href="#knowledge-heading">资料库</a>
+        <a href="#case-heading">望月案例</a>
+        <a href="#technology-heading">技术状态</a>
+        <a href="#project-heading">项目录入</a>
+        <a href="#agent-heading">智能咨询</a>
+        <a href="#result-heading">初步报告</a>
+        <a href="#plan-heading">方案 PDF</a>
+      </nav>
+
+      <section class="intro client-hero" aria-labelledby="intro-heading">
+        <div><p class="hero-kicker">让每一项改造决策，都有据可查</p>
+          <h2 id="intro-heading">从建筑现状，<br>到可复核的低碳方案。</h2>
+          <p class="hero-description">查政策、核数据、比方案。公开资料检索与确定性计算相结合，让依据、假设和缺口清晰可见。</p>
+          <div class="actions"><button id="start-demo" type="button" class="primary-button">体验完整测算 →</button><a class="hero-link" href="#agent-heading">先咨询一个问题 ↗</a></div>
+          <p class="hero-footnote">测算体验使用标注假设的示例，不代表望月公寓真实收益。</p>
+        </div>
+        <div class="hero-console"><div class="console-top"><span class="pulse-dot"></span><span>本地知识工作台</span><small>可追溯</small></div>
+          <div class="hero-metrics"><div><strong id="hero-docs">—</strong><span>已入库资料</span></div><div><strong id="hero-chunks">—</strong><span>真实向量片段</span></div></div>
+          <div class="console-flow"><span>公开文件</span><i>→</i><span>来源检索</span><i>→</i><span>辅助决策</span></div>
+          <p id="hero-readiness">正在读取资料状态…</p><div class="console-bottom">百炼向量 · Chroma · DeepSeek · Python</div>
+        </div>
+      </section>
+      <div class="journey" aria-label="客户演示流程"><a href="#knowledge-heading"><b>01</b> 查看资料依据</a><a href="#project-heading"><b>02</b> 录入项目基线</a><a href="#agent-heading"><b>03</b> 追问与核查</a><a href="#result-heading"><b>04</b> 生成比选报告</a></div>
+
+      <section class="panel" aria-labelledby="knowledge-heading">
+        <div class="section-title"><div><p class="step">KNOWLEDGE LIBRARY</p><h2 id="knowledge-heading">项目资料库</h2></div><p>资料已入库不等于对当前项目适用；保留原始出处与待核验事项。</p></div>
+        <div class="library-metrics" id="library-metrics" aria-live="polite">正在核对本地资料…</div>
+        <details class="library-details"><summary>浏览全部资料与待处理清单</summary>
+          <div class="library-filters"><label>搜索资料<input id="knowledge-search" type="search" placeholder="标题、文号或地区" /></label><label>处理状态<select id="knowledge-filter"><option value="all">全部资料</option><option value="indexed">已入库</option><option value="pending">等待入库</option><option value="blocked">需处理 / 待核对</option></select></label></div>
+          <p id="knowledge-count" class="hint" aria-live="polite"></p><div id="knowledge-list" class="knowledge-list"></div>
+        </details>
+        <p class="hint" id="knowledge-notice">私人照片、账单、签章和密钥不在本次批量入库范围。</p>
+      </section>
+
+      <section class="panel case-panel" aria-labelledby="case-heading">
+        <div class="section-title">
+          <div>
+            <p class="step">真实试点</p>
+            <h2 id="case-heading">望月公寓 · 当前数据完成度</h2>
+          </div>
+          <p>只加载已核验且可追溯的字段。估算值、标准限值和来源不明资料不会自动进入计算。</p>
+        </div>
+        <details class="case-details"><summary>查看真实案例证据与数据缺口</summary>
+        <div class="case-overview" id="case-overview" aria-live="polite">
+          <div class="case-metric"><span>知识资料</span><strong>读取中</strong></div>
+          <div class="case-metric"><span>可计算方案</span><strong>读取中</strong></div>
+          <div class="case-metric"><span>关键缺口</span><strong>读取中</strong></div>
+        </div>
+        <div class="case-columns">
+          <div>
+            <h3>已具备或可作候选依据</h3>
+            <ul id="case-evidence" class="evidence-list"><li>正在读取案例状态……</li></ul>
+          </div>
+          <div>
+            <h3>阻断数值结论的输入</h3>
+            <ul id="case-blockers" class="evidence-list warning-list"><li>正在读取案例状态……</li></ul>
+          </div>
+        </div>
+        <div class="actions compact-actions">
+          <button class="primary-button" id="load-wangyue" type="button" disabled>加载已核验字段</button>
+          <a class="text-link" href="docs/数据与材料收集清单.md" target="_blank" rel="noreferrer">查看数据格式与收集清单</a>
+        </div>
+        <p class="mode-note" id="case-note">加载后仍会保留电量、电费、工程量、节能量等缺失字段为空；这是数据真实性控制，不是程序故障。</p>
+        </details>
+      </section>
+
+      <section class="panel assumption-panel" aria-labelledby="assumption-heading">
+        <p class="step">可交互功能演示</p>
+        <h2 id="assumption-heading">真实资料未齐，也能检验完整计算流程</h2>
+        <p>可载入一组明确标注的假设，查看方案计算和敏感性分析。假设与望月公寓资料分开，不能作为真实收益、报价或授权证明。</p>
+        <div class="actions">
+          <button id="load-assumptions" class="secondary-button" type="button">载入假设情景演示</button>
+          <button id="clear-case" class="secondary-button" type="button">清空当前输入与结果</button>
+        </div>
+      </section>
+      <div id="data-nature-banner" class="data-nature-banner" role="status" hidden></div>
+
+      <section class="panel technology-panel" aria-labelledby="technology-heading">
+        <div class="section-title">
+          <div>
+            <p class="step">技术链路</p>
+            <h2 id="technology-heading">运行状态与真实性边界</h2>
+          </div>
+          <p>状态由后端实时返回；未接通的能力不会显示为“已完成”。</p>
+        </div>
+        <details><summary>查看服务连接状态与资料维护</summary>
+        <div class="status-grid" id="technology-status" aria-live="polite">
+          <div class="status-card"><span>后端服务</span><strong id="status-backend" class="status-pill waiting">检测中</strong></div>
+          <div class="status-card"><span>智能体与多模态 API</span><strong id="status-api" class="status-pill waiting">检测中</strong></div>
+          <div class="status-card"><span>文本向量服务</span><strong id="status-embedding" class="status-pill waiting">检测中</strong><small id="status-embedding-detail"></small></div>
+          <div class="status-card"><span>本地 Chroma RAG</span><strong id="status-rag" class="status-pill waiting">检测中</strong><small id="status-rag-detail"></small></div>
+          <div class="status-card"><span>确定性计算引擎</span><strong id="status-tool" class="status-pill waiting">检测中</strong></div>
+        </div>
+        <div class="actions compact-actions">
+          <button class="secondary-button" id="check-backend" type="button">重新检测</button>
+          <button class="secondary-button" id="ingest-rag" type="button" disabled>同步已核对资料（可能计费）</button>
+        </div>
+        <p class="mode-note" id="mode-note">正在检测技术链路。即使后端未启动，下方仍可进行离线数据校验，但不会声称使用了 API、RAG 或 Python Tool Calling。</p>
+        </details>
+      </section>
+
+      <form id="project-form" novalidate>
+        <section class="panel" aria-labelledby="project-heading">
+          <div class="section-title">
+            <div>
+              <p class="step">01</p>
+              <h2 id="project-heading">项目与基线信息</h2>
+            </div>
+            <p>用于识别适用的区域资料，并作为节省额与减碳量的计算基线。</p>
+          </div>
+          <div class="field-grid">
+            <label>
+              项目或建筑名称
+              <input id="project-name" type="text" autocomplete="off" placeholder="现场项目名称" />
+            </label>
+            <label>
+              所在地区 <span class="required">必填</span>
+              <input id="region" type="text" autocomplete="address-level1" placeholder="省 市 区县" required />
+            </label>
+            <label>
+              地址或现场备注
+              <input id="address" type="text" autocomplete="street-address" placeholder="可选" />
+            </label>
+            <label>
+              建筑年代
+              <input id="construction-year" type="number" min="1800" max="2100" inputmode="numeric" placeholder="例如：竣工年份" />
+            </label>
+            <label>
+              建筑面积（m²）
+              <input id="floor-area" type="number" min="0" step="0.01" inputmode="decimal" placeholder="可选；现场测量或图纸值" />
+            </label>
+            <label>
+              屋顶可用面积（m²）
+              <input id="roof-area" type="number" min="0" step="0.01" inputmode="decimal" placeholder="可选；用于光伏方案核验" />
+            </label>
+            <label>
+              年用电量（kWh） <span class="required">必填</span>
+              <input id="annual-electricity" type="number" min="0" step="0.01" inputmode="decimal" required placeholder="近12个月账单汇总" />
+            </label>
+            <label>
+              电价（元/kWh） <span class="required">必填</span>
+              <input id="electricity-price" type="number" min="0" step="0.0001" inputmode="decimal" required placeholder="适用电价" />
+            </label>
+            <label>
+              电价来源名称 <span class="required">必填</span>
+              <input id="electricity-price-source" type="text" required placeholder="文件或公告名称" />
+            </label>
+            <label>
+              电价来源链接或文件编号 <span class="required">必填</span>
+              <input id="electricity-price-url" type="text" required placeholder="https://… 或文件编号" />
+            </label>
+            <label>
+              电力排放因子（kgCO₂e/kWh） <span class="required">必填</span>
+              <input id="carbon-factor" type="number" min="0" step="0.000001" inputmode="decimal" required placeholder="适用区域与年份的因子" />
+            </label>
+            <label>
+              碳因子来源名称 <span class="required">必填</span>
+              <input id="carbon-source" type="text" required placeholder="报告或公告名称" />
+            </label>
+            <label>
+              碳因子来源链接或文件编号 <span class="required">必填</span>
+              <input id="carbon-url" type="text" required placeholder="https://… 或文件编号" />
+            </label>
+            <label>
+              数据基准日期 <span class="required">必填</span>
+              <input id="baseline-date" type="date" required />
+            </label>
+          </div>
+          <div class="photo-block">
+            <div>
+              <label class="file-label" for="photos">现场照片（1–5 张）</label>
+              <input id="photos" type="file" accept="image/jpeg,image/png,image/webp,image/gif" multiple />
+              <p class="hint">图片会发送到已配置的云端模型。只上传已获授权并完成脱敏的照片；所有识别结果仍须人工确认。</p>
+              <button class="secondary-button inline-button" id="analyze-photos" type="button" disabled>调用多模态 API 提取可见特征</button>
+            </div>
+            <div id="photo-preview" class="photo-preview" aria-live="polite"></div>
+          </div>
+          <div id="vision-result" class="agent-output" hidden aria-live="polite"></div>
+        </section>
+
+        <section class="panel" aria-labelledby="generic-heading">
+          <div class="section-title">
+            <div>
+              <p class="step">02</p>
+              <h2 id="generic-heading">通用改造方案</h2>
+            </div>
+            <p>适用于外墙保温、门窗替换等已由勘察、审计或模拟得到节能量的方案。</p>
+          </div>
+          <div class="toggle-line">
+            <input id="generic-enabled" type="checkbox" />
+            <label for="generic-enabled">录入一项可复核的通用改造方案</label>
+          </div>
+          <div id="generic-fields" class="field-grid conditional" hidden>
+            <label>
+              方案名称 <span class="required">必填</span>
+              <input id="generic-name" type="text" placeholder="例如：按勘察结论填写" />
+            </label>
+            <label>
+              改造总投资（元） <span class="required">必填</span>
+              <input id="generic-investment" type="number" min="0" step="0.01" inputmode="decimal" placeholder="含安装等全部成本" />
+            </label>
+            <label>
+              已确认补贴（元） <span class="required">必填</span>
+              <input id="generic-subsidy" type="number" min="0" step="0.01" inputmode="decimal" placeholder="无补贴请填 0" />
+            </label>
+            <label>
+              预计年节电量（kWh） <span class="required">必填</span>
+              <input id="generic-saving" type="number" min="0" step="0.01" inputmode="decimal" placeholder="审计、模拟或实测值" />
+            </label>
+            <label>
+              年运维成本（元） <span class="required">必填</span>
+              <input id="generic-om" type="number" min="0" step="0.01" inputmode="decimal" placeholder="无额外成本请填 0" />
+            </label>
+            <label>
+              方案数据来源名称 <span class="required">必填</span>
+              <input id="generic-source" type="text" placeholder="报价单、审计报告或模型文件" />
+            </label>
+            <label>
+              方案来源链接、文件编号或归档路径 <span class="required">必填</span>
+              <input id="generic-url" type="text" placeholder="https://…、文件编号或归档路径" />
+            </label>
+            <label>
+              方案数据日期 <span class="required">必填</span>
+              <input id="generic-date" type="date" />
+            </label>
+          </div>
+        </section>
+
+        <section class="panel" aria-labelledby="pv-heading">
+          <div class="section-title">
+            <div>
+              <p class="step">03</p>
+              <h2 id="pv-heading">屋顶光伏方案</h2>
+            </div>
+            <p>按装机容量、实测或权威资源数据和电价结构计算年度发电收益。</p>
+          </div>
+          <div class="toggle-line">
+            <input id="pv-enabled" type="checkbox" />
+            <label for="pv-enabled">录入一项屋顶光伏方案</label>
+          </div>
+          <div id="pv-fields" class="field-grid conditional" hidden>
+            <label>
+              装机容量（kWp） <span class="required">必填</span>
+              <input id="pv-capacity" type="number" min="0" step="0.01" inputmode="decimal" placeholder="设计或可研值" />
+            </label>
+            <label>
+              年发电量系数（kWh/kWp·年） <span class="required">必填</span>
+              <input id="pv-yield" type="number" min="0" step="0.01" inputmode="decimal" placeholder="当地资源或实测值" />
+            </label>
+            <label>
+              自发自用比例（0–1） <span class="required">必填</span>
+              <input id="pv-self-use" type="number" min="0" max="1" step="0.0001" inputmode="decimal" placeholder="例如：0.8" />
+            </label>
+            <label>
+              余电上网电价（元/kWh） <span class="required">必填</span>
+              <input id="pv-feed-in-tariff" type="number" min="0" step="0.0001" inputmode="decimal" placeholder="如不余电上网请填 0" />
+            </label>
+            <label>
+              改造总投资（元） <span class="required">必填</span>
+              <input id="pv-investment" type="number" min="0" step="0.01" inputmode="decimal" placeholder="设备、安装、并网等合计" />
+            </label>
+            <label>
+              已确认补贴（元） <span class="required">必填</span>
+              <input id="pv-subsidy" type="number" min="0" step="0.01" inputmode="decimal" placeholder="无补贴请填 0" />
+            </label>
+            <label>
+              年运维成本（元） <span class="required">必填</span>
+              <input id="pv-om" type="number" min="0" step="0.01" inputmode="decimal" placeholder="无额外成本请填 0" />
+            </label>
+            <label>
+              光伏数据来源名称 <span class="required">必填</span>
+              <input id="pv-source" type="text" placeholder="可研、报价或资源报告名称" />
+            </label>
+            <label>
+              光伏来源链接、文件编号或归档路径 <span class="required">必填</span>
+              <input id="pv-url" type="text" placeholder="https://…、文件编号或归档路径" />
+            </label>
+            <label>
+              光伏数据日期 <span class="required">必填</span>
+              <input id="pv-date" type="date" />
+            </label>
+          </div>
+        </section>
+
+        <section class="panel" aria-labelledby="import-heading">
+          <div class="section-title">
+            <div>
+              <p class="step">04</p>
+              <h2 id="import-heading">导入真实资料</h2>
+            </div>
+            <p>导入后资料仅在当前浏览器会话中使用。字段格式见 <a href="docs/数据与材料收集清单.md" target="_blank" rel="noreferrer">数据与材料收集清单</a>。</p>
+          </div>
+          <div class="upload-grid">
+            <label class="upload-card">
+              <strong>可复核方案 CSV</strong>
+              <span>可一次导入多个已完成节能审计或初步测算的方案。</span>
+              <input id="options-csv" type="file" accept=".csv,text/csv" />
+            </label>
+            <label class="upload-card">
+              <strong>政策资料 CSV</strong>
+              <span>仅提示同地区候选政策，不自动认定补贴资格。</span>
+              <input id="policies-csv" type="file" accept=".csv,text/csv" />
+            </label>
+          </div>
+          <div class="import-status" id="import-status" aria-live="polite"></div>
+        </section>
+
+        <section class="panel" aria-labelledby="agent-heading">
+          <div class="section-title">
+            <div>
+              <p class="step">05</p>
+              <h2 id="agent-heading">低碳改造 · 智能咨询</h2>
+            </div>
+            <p>仅在 API 与本地知识库都就绪后使用；政策、标准结论必须带回知识库来源。</p>
+          </div>
+          <label for="agent-question">需要智能体核查的问题</label>
+          <div class="question-chips"><button type="button" data-question="请检索2023年浙江省电力平均二氧化碳排放因子，列出数值、单位、来源和适用性限制；区分电力碳足迹因子。">查询浙江电力因子</button><button type="button" data-question="请依据知识库说明工商业输配电价为什么不能直接当作最终购电单价，并列出需要核对的账单字段。">核对电价口径</button><button type="button" data-question="望月公寓尚无真实电费账单、工程量和节能审计。请只列出开展改造比选需要补充的数据、文件格式和获取渠道，不要编造收益或回收期。">整理项目数据缺口</button></div>
+          <textarea id="agent-question" rows="4" placeholder="例如：基于已入库的现行资料，当前项目还缺哪些可用于门窗改造比选的数据？"></textarea>
+          <div class="actions compact-actions">
+            <button class="primary-button" id="ask-agent" type="button" disabled>检索资料并回答 →</button>
+          </div>
+          <p class="hint">提交后，问题、当前项目基线及检索片段会发送至配置的云端服务，产生 API 费用。请勿输入个人身份、密钥或未授权资料。</p>
+          <div id="agent-result" class="agent-output" hidden aria-live="polite"></div>
+        </section>
+
+        <section class="panel result-panel" aria-labelledby="result-heading">
+          <div class="section-title">
+            <div>
+              <p class="step">06</p>
+              <h2 id="result-heading">数据校验与初步报告</h2>
+            </div>
+            <p>计算结果仅使用你填写或导入的数值，并列出关键公式与来源。</p>
+          </div>
+          <div class="actions">
+            <button class="primary-button" id="calculate" type="submit">校验并生成初步方案报告</button>
+            <button class="secondary-button" id="export-json" type="button" disabled>导出 JSON</button>
+            <button class="secondary-button" id="export-html" type="button" disabled>下载可阅读报告</button>
+            <button class="secondary-button" id="print-report" type="button" disabled>打印报告</button>
+          </div>
+          <div id="validation" class="validation" aria-live="polite"></div>
+          <p id="report-nature" class="data-nature-banner" hidden></p>
+          <div id="summary" class="summary" hidden></div>
+          <div id="sensitivity-results" class="policy-matches" hidden></div>
+          <div id="policy-matches" class="policy-matches" hidden></div>
+          <div class="table-wrap" id="result-table-wrap" hidden>
+            <table>
+              <thead>
+                <tr>
+                  <th>方案</th>
+                  <th>净投资</th>
+                  <th>年净收益</th>
+                  <th>年减碳量</th>
+                  <th>静态回收期</th>
+                  <th>计算依据</th>
+                </tr>
+              </thead>
+              <tbody id="result-table"></tbody>
+            </table>
+          </div>
+        </section>
+      </form>
+      <section class="panel plan-panel" aria-labelledby="plan-heading">
+        <div class="section-title"><div><p class="step">07 / 最终交付</p><h2 id="plan-heading">完整改造方案与分析 PDF</h2></div><p>把检索依据、改造建议和确定性测算组织成可交付的前期方案。</p></div>
+        <div class="plan-deliverables"><span>现状诊断与目标</span><span>技术措施与比选</span><span>投资、现金流与敏感性</span><span>采购、实施与验收</span><span>风险、缺口与来源</span></div>
+        <div id="plan-options" class="plan-options">
+          <label for="plan-objective">改造目标与关注事项</label>
+          <textarea id="plan-objective" maxlength="1500" rows="3" placeholder="例如：优先改善公共区域照明，在不降低安全与照明品质的前提下降低用电，给出实施、验收和后续验证方案。"></textarea>
+          <label for="plan-comparison-investment">可选：仅改变投资的比较情景（元）</label>
+          <input id="plan-comparison-investment" type="number" min="0" step="0.01" placeholder="如 48000；留空则不增加情景" />
+          <p class="hint">仅适用于一项通用方案。其他输入保持不变，不代表已取得新报价或第二种技术设计。</p>
+        </div>
+        <div class="actions"><button id="generate-plan" class="primary-button" type="button" disabled>生成并下载完整方案 PDF →</button><a class="secondary-button" href="/api/demo/plan.pdf" download>下载青禾示范方案 PDF</a></div>
+        <p class="hint">青禾示范报告为已生成并做过文字复核的假设案例，直接下载不重复调用 API；不代表当前输入的生成结果。</p>
+        <p id="plan-status" role="status" aria-live="polite">先录入方案并完成上方测算，再生成完整 PDF。</p>
+        <p class="hint">将真实调用百炼向量、Chroma 检索和 DeepSeek API，可能产生调用费用。数值由 Python 重新计算，报告正文为待专业复核的建议。生成可能需要几分钟；失败会明确提示，不用模板假装模型已完成。</p>
+      </section>
+    </main>
+
+    <footer>
+      <p>前期决策原型 · 缺失数据不代填 · 结果可复核 · 工程与政策结论需人工确认</p>
+    </footer>
+    <dialog id="action-confirm" aria-labelledby="confirm-heading" aria-describedby="confirm-message">
+      <h2 id="confirm-heading">请确认本次操作</h2>
+      <p id="confirm-message"></p>
+      <div class="actions">
+        <button id="confirm-cancel" class="secondary-button" type="button" autofocus>取消</button>
+        <button id="confirm-accept" class="primary-button" type="button">确认继续</button>
+      </div>
+    </dialog>
+    <script src="client-ui.js?v=0.6.0"></script>
+    <script src="app.js?v=0.6.0"></script>
+  </body>
+</html>

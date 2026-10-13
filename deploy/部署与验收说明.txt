@@ -1,0 +1,52 @@
+室在人为 v0.6.0 运行与部署说明
+更新日期：2026-10-13
+
+本机与干净源码的状态
+原机已保有22份已入库资料、482个向量片段，并有百炼及DeepSeek真实联调和完整PDF生成记录。
+非视频交付源码只携带3份经文件指纹核对的公开样本，初始向量数量为0。源码不包含本机密钥、原向量库、私人照片、账单或签章。
+本机与新源码状态须分别确认，不把原机入库数量当作新机器已完成。
+
+Windows运行
+1 解压源码，双击启动演示.bat。首次运行按backend/requirements.txt安装固定版本依赖。
+2 打开http://127.0.0.1:8000，可载入青禾假设并进行Python测算，下载已生成的假设方案PDF。
+3 运行configure-keys.bat，在本地隐藏输入账号持有人提供的有效DeepSeek及百炼密钥和Base URL。配置写backend/.env，模板不含真实密钥。
+4 新机器或新模型必须审核并入库自己的资料。以下命令在项目根目录执行：
+   python backend/scripts/check_readiness.py --json
+   python backend/scripts/ingest_knowledge.py --audit-only
+   前两步离线、不发送正文、不调用模型。
+5 审核来源、文件内容、权限与SHA256后，显式选定三份公开样本：
+   python backend/scripts/ingest_knowledge.py --reviewed --document-id DOC-FAC-0001 --document-id DOC-POL-0002 --document-id DOC-POL-0004
+   此步把正文发送到百炼产生费用。未经审核或指纹不匹配的文件阻断。结果按实际返回值记录，不能事先把计划分块数当作已经写入。
+6 可选联通检查：python backend/scripts/check_connectivity.py --online。仅发送公开测试短句，会产生调用费用。
+7 检索、问答与完整PDF发送当前问题、输入及相关片段给已配置模型服务。图片另行授权；本轮没有完成授权照片效果验收。
+
+离线与错误处理
+不配置密钥仍可运行本地确定性计算和固定示例PDF下载。云端或RAG未就绪时相关功能显式提示。
+完整报告需要至少一个可计算方案与非空知识库。实际数值由后端重新计算，生成记录保存在未公开的storage/reports。
+联调脚本支持自己的访问地址：python backend/scripts/verify_customer_demo.py --base-url http://127.0.0.1:8000。
+
+Docker备选
+本机没有Docker，以下配置已经代码审查但未构建或远程验收。
+镜像使用Python3.12与固定依赖，包含ReportLab、文泉驿中文字体和青禾假设示例PDF。
+compose将公开资料只读挂载至/app/数据收集包，与审核边界一致；Chroma存储单独持久挂载。
+应用仅绑定服务器127.0.0.1:18000，Chroma采用嵌入式本地目录，没有单独公开端口。
+在有权限的目标服务器配置backend/.env和资料目录后执行：
+   docker compose -f deploy/compose.yaml config --quiet
+   docker compose -f deploy/compose.yaml up -d --build
+   docker compose -f deploy/compose.yaml exec app python backend/scripts/check_readiness.py --json
+   docker compose -f deploy/compose.yaml exec app python backend/scripts/ingest_knowledge.py --audit-only
+   后续入库须使用上述--reviewed与文档编号参数。
+不要展示未加--quiet的完整展开配置，以免其中出现私有设置。
+可通过已核实主机的SSH隧道访问回环端口。公网部署还需用户鉴权、HTTPS、配额和费用管理等专项实现与验收。
+
+持久化
+不要让多个写入进程同时操作同一个嵌入式Chroma目录。更换向量模型、地址或维度后需重建匹配索引。
+备份前停止写入，保存原文与索引的匹配版本，避免删除持久卷。源码与真实数据备份分开保管。
+本机聊天中公开过的密钥由账号持有人撤销和替换，私有配置不会进入交付Git或ZIP。
+
+验收边界
+2026-10-13本机运行代码42项后端测试及18项离线准备检查通过。
+完整云链路和15页报告属于2026-10-12真实记录。今天未为部署检查新增付费模型调用。
+干净源码复现、依赖重新下载情况和HTTP验收以提交包06_运行与验收/源码复现验收.json为准。
+当日同机源码复现不等于另一台电脑、Linux镜像或公网客户服务已验收。
+自动气候匹配、完整热工模型、预算自动匹配和照片效果仍须继续开发或验证。

@@ -1,0 +1,35 @@
+{
+  "case_id": "assumption-demo-001",
+  "data_nature": "assumption",
+  "project_name": "青禾社区公共照明改造（假设案例）",
+  "notice": "假设情景测算：下列参数仅用于验证系统功能，不是望月公寓实测数据、供应商报价或节能审计结论。",
+  "fields": {
+    "project-name": "青禾社区公共照明改造（假设案例）",
+    "region": "浙江省 杭州市（场景设定）",
+    "address": "虚构用户林悦，社区物业项目负责人；无真实地址，不对应望月公寓。",
+    "plan-objective": "为虚构社区物业负责人林悦编制一套便于决策讨论的完整公共照明改造前期方案。重点考虑灯具适配、分区和感应控制、照明品质、电气及应急照明安全、分项计量、住户影响、采购实施与节能量验收。照明是唯一已有假设测算的措施；门窗、外墙、空调和光伏只列待调查方向，不计入收益。比较总投资六万元与四万八千元，除投资外保持其他假设一致。",
+    "plan-comparison-investment": 48000,
+    "annual-electricity": 100000,
+    "electricity-price": 0.538,
+    "electricity-price-source": "演示假设，不代表项目执行电价",
+    "electricity-price-url": "assumption:demo-001",
+    "carbon-factor": 0.5,
+    "carbon-source": "演示假设因子，不代表项目核算口径",
+    "carbon-url": "assumption:demo-001",
+    "baseline-date": "2026-10-12",
+    "generic-name": "假设照明改造情景",
+    "generic-investment": 60000,
+    "generic-subsidy": 0,
+    "generic-saving": 12000,
+    "generic-om": 300,
+    "generic-source": "人工设定的功能演示假设，无实测或采购效力",
+    "generic-url": "assumption:demo-001",
+    "generic-date": "2026-10-12"
+  },
+  "assumptions": [
+    "年用电量100000 kWh、节电量12000 kWh均为演示输入，不是账单或模拟软件输出。",
+    "投资60000元、年运维300元、补贴0元是算术情景设定，不是报价或补贴资格结论。",
+    "电价0.538元/kWh、碳因子0.5 kgCO2e/kWh只用于公式示例。",
+    "敏感性分析采用投资及节电量上下浮动20%的假设范围，不是统计置信区间。"
+  ]
+}

@@ -1,0 +1,89 @@
+{
+  "case_id": "wangyue-2026-10-12",
+  "project_name": "望月公寓",
+  "as_of_date": "2026-10-12",
+  "region": "浙江省 杭州市",
+  "case_status": "数据核验中",
+  "safe_prefill": {
+    "project_name": "望月公寓",
+    "region": "浙江省 杭州市",
+    "carbon_factor_kgco2e_per_kwh": 0.4974,
+    "carbon_source": "生态环境部、国家统计局《关于发布2023年电力二氧化碳排放因子的公告》（公告2025年第47号）",
+    "carbon_source_url": "https://www.mee.gov.cn/xxgk2018/xxgk/xxgk01/202512/t20251231_1139517.html",
+    "carbon_data_date": "2025-12-31"
+  },
+  "available_evidence": [
+    {
+      "item": "政策、标准与价格资料",
+      "status": "已整理",
+      "detail": "知识清单40条，政策11条，电价57条，碳因子91条，改造参考报价30条。"
+    },
+    {
+      "item": "户型平面资料",
+      "status": "待核验来源",
+      "detail": "3份户型平面PDF包含房间布局和尺寸标注，但未附原始图纸出处、图号、比例与测绘/设计单位信息。"
+    },
+    {
+      "item": "建筑照片",
+      "status": "限内部核验",
+      "detail": "8张图片可辅助观察外立面、门窗、外机和外墙老化；部分图片含网站水印、楼栋或房间标识，来源与脱敏状态需重新确认。"
+    },
+    {
+      "item": "建筑评估表",
+      "status": "参数待核验",
+      "detail": "表内记录2002年、约1515.36平方米、6层、约200平方米可用屋顶等值；未附权属、竣工图或测绘证据，不能直接作为计算输入。"
+    }
+  ],
+  "provisional_values": [
+    {"field": "construction_year", "value": "2002", "status": "待物业或竣工资料确认"},
+    {"field": "floor_area_m2", "value": "1515.36", "status": "待权属或测绘资料确认"},
+    {"field": "floor_count", "value": "6", "status": "待楼栋资料确认"},
+    {"field": "roof_usable_area_m2", "value": "200", "status": "估算值，需测绘与结构/消防复核"},
+    {"field": "window_wall_ratio", "value": "北向≤0.25，其他朝向≤0.35", "status": "标准限值，不是现场实测值"},
+    {"field": "envelope_u_values", "value": "墙≤1.5、屋面≤1.0、窗≤3.2 W/(m²·K)", "status": "参考限值，不是检测值"}
+  ],
+  "blocking_inputs": [
+    {
+      "priority": "P0",
+      "field": "连续12个月用电量与电费",
+      "why": "决定基线能耗、适用电价、自用比例和节省额；缺失时不能计算年收益或回收期。",
+      "accepted_format": "脱敏PDF/JPG账单，另附electricity_monthly.csv；每月一行，含月份、电量kWh、金额元、用户类别、计费口径。"
+    },
+    {
+      "priority": "P0",
+      "field": "试点楼栋精确地址与区县",
+      "why": "用于核对区县政策、电价适用对象、气候与太阳能资源。",
+      "accepted_format": "TXT/DOCX或project_baseline.json；精确到区县和街道即可，公开材料中可隐藏门牌。"
+    },
+    {
+      "priority": "P0",
+      "field": "可核验工程量",
+      "why": "墙体、窗、屋顶的面积决定投资；目前只有户型草图与估算值。",
+      "accepted_format": "原始竣工图/测绘PDF或XLSX工程量表；至少含外墙面积、窗面积、屋顶净可用面积及计算过程。"
+    },
+    {
+      "priority": "P0",
+      "field": "节能量依据",
+      "why": "不能用材料宣传比例代替项目节能量。",
+      "accepted_format": "节能审计、EnergyPlus/DeST模型结果或经复核的热工计算书PDF/XLSX，含输入、边界、版本和输出。"
+    },
+    {
+      "priority": "P1",
+      "field": "屋面结构、消防与并网条件",
+      "why": "决定光伏是否可实施和可装容量。",
+      "accepted_format": "结构复核意见、屋面布置图、消防通道要求、国网接入答复；PDF/JPG，签章页与日期清晰。"
+    },
+    {
+      "priority": "P1",
+      "field": "项目化报价",
+      "why": "现有价格为浙江省内参考信息价或其他项目EPC报价，不能替代望月公寓正式报价。",
+      "accepted_format": "PDF/XLSX报价单，含供应商、规格、数量、单价、税费、安装、质保、有效期与联系人（公开版可脱敏）。"
+    },
+    {
+      "priority": "P1",
+      "field": "照片来源、授权与脱敏复核",
+      "why": "现有复核文件未签字，部分照片含水印、楼栋/房间标识，且与说明存在不一致。",
+      "accepted_format": "签字授权PDF；image_labels.xlsx逐张记录来源URL/拍摄人、授权状态、脱敏处理与复核人。"
+    }
+  ]
+}

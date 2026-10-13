@@ -1,0 +1,33 @@
+services:
+  app:
+    build:
+      context: ..
+      dockerfile: deploy/Dockerfile
+    env_file:
+      - ../backend/.env
+    environment:
+      APP_HOST: 0.0.0.0
+      APP_PORT: "8000"
+      CHROMA_PATH: /app/storage/chroma
+      KNOWLEDGE_MANIFEST: /app/数据收集包/08_已整理结构化数据/knowledge_manifest.csv
+    ports:
+      - "127.0.0.1:18000:8000"
+    volumes:
+      - chroma_data:/app/storage
+      - ../数据收集包:/app/数据收集包:ro
+    read_only: true
+    tmpfs:
+      - /tmp:rw,noexec,nosuid,size=128m
+    cap_drop:
+      - ALL
+    security_opt:
+      - no-new-privileges:true
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/api/health', timeout=5).read()"]
+      interval: 30s
+      timeout: 8s
+      retries: 3
+      start_period: 40s
+volumes:
+  chroma_data:

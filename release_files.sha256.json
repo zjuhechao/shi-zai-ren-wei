@@ -1,0 +1,327 @@
+[
+  {
+    "path": ".dockerignore",
+    "bytes": 463,
+    "sha256": "d3afebab92a0ee449c899648dc8f3a9d800578e23fa2029e11187e2a1bdf0581"
+  },
+  {
+    "path": ".gitignore",
+    "bytes": 103,
+    "sha256": "4cdafee337b94f78d030205c5c9bf2fcac9b285e787eecd5c17da87e4f501f00"
+  },
+  {
+    "path": "启动演示.bat",
+    "bytes": 128,
+    "sha256": "0daa19a8db488f8c76987059abfb3a66d3437b1323b6dcc340d1fbdc64842de3"
+  },
+  {
+    "path": "启动演示.ps1",
+    "bytes": 2334,
+    "sha256": "f3e933a172acad4df9f0e626ff678f1ca3b87a6a98227eb9b845bfe2814bb282"
+  },
+  {
+    "path": "app.js",
+    "bytes": 49352,
+    "sha256": "b8bc5e78caf4fa820a054b570c3d12c963a47224c28b49261281d266a68ae419"
+  },
+  {
+    "path": "client-ui.js",
+    "bytes": 8142,
+    "sha256": "ba9da85ab1cb9eee54c50681d3c5af0352bcdd53acf513236a98ae078252b5be"
+  },
+  {
+    "path": "configure-keys.bat",
+    "bytes": 190,
+    "sha256": "857cc597c03fca612b65daf6b9a01fd4f3fe6e09985f4a33bc2e7dd8797a725d"
+  },
+  {
+    "path": "index.html",
+    "bytes": 26315,
+    "sha256": "0f961d25ebac22c14400c8bf5584d5d830a0fc6383b424c00bbd7c8078a0d491"
+  },
+  {
+    "path": "README.md",
+    "bytes": 6331,
+    "sha256": "1a89519a5d08eea9023220b1756735ad0005e1f0a4e37ef6fe6ba542e9c900ff"
+  },
+  {
+    "path": "styles.css",
+    "bytes": 19468,
+    "sha256": "6fbfe5bbb0428b9202947d44a237c286a9cbc5191443b0fa82996e8e2e0e5098"
+  },
+  {
+    "path": "04_完整方案交付_v0.6/青禾社区_改造方案与分析报告.pdf",
+    "bytes": 509333,
+    "sha256": "924adf5687f155a1ef9c6fb085805e02ee928358b3189d8ddf03bfae14104993"
+  },
+  {
+    "path": "backend/.env.example",
+    "bytes": 1066,
+    "sha256": "d33090457386fc27c540a9fe1e4f36da8447da6f43ba7baa7a3838674b390fbc"
+  },
+  {
+    "path": "backend/README.md",
+    "bytes": 3344,
+    "sha256": "62171d84f631e66ed5970420ee321a4dac03558c9af52061da2f985131c5a46d"
+  },
+  {
+    "path": "backend/requirements.snapshot.windows-py312.txt",
+    "bytes": 1939,
+    "sha256": "6c40b3b9f9b592c0dc372e61b8132760934ed31d92b7ec2db3a450390f0d6d83"
+  },
+  {
+    "path": "backend/requirements.txt",
+    "bytes": 317,
+    "sha256": "3a6d3bad86715bc2c76258039812e281eced5f11288e8b552c217151d6dfae46"
+  },
+  {
+    "path": "backend/run.py",
+    "bytes": 241,
+    "sha256": "f0905a80096c66e4ca4ec2adba6a8bd0ca304cb37a002a14c80b0e00f020def6"
+  },
+  {
+    "path": "backend/app/__init__.py",
+    "bytes": 37,
+    "sha256": "9029e49987b0dabf205a2b49054f50fcc4d08b37d006aa61750e7aa1a00513d7"
+  },
+  {
+    "path": "backend/app/agent.py",
+    "bytes": 14018,
+    "sha256": "43492e3f40a3e3599d5f88dcd339409bedc6a42cabe255e142e97dba3b6d6219"
+  },
+  {
+    "path": "backend/app/calculators.py",
+    "bytes": 5650,
+    "sha256": "b2bc44f7d1669b0e80df6d6a9d9dd8762f5bbd617ef4cc3a5f1e179688c9bf93"
+  },
+  {
+    "path": "backend/app/config.py",
+    "bytes": 4218,
+    "sha256": "2aa4a896faa3dcb1840d7be250d363ae52768aea93e3aedd25278783e90fede3"
+  },
+  {
+    "path": "backend/app/document_loader.py",
+    "bytes": 3778,
+    "sha256": "41f95a14c26ffe5464491a74a72afd46bfb1dad49ce8b9706a5e38f4ea2f61a0"
+  },
+  {
+    "path": "backend/app/knowledge_audit.py",
+    "bytes": 2212,
+    "sha256": "3ece9c29d78ede1580c1d1bb81607d07718f3c5752d3c1f2286217c95c618e6f"
+  },
+  {
+    "path": "backend/app/knowledge_catalog.py",
+    "bytes": 4175,
+    "sha256": "376f4098ace057ea763a034f9155c75bf706274c92be1897e6b9d19d670ba792"
+  },
+  {
+    "path": "backend/app/main.py",
+    "bytes": 11405,
+    "sha256": "fb213c6ebcb856fa7b00e576eb5b58793fd9650282051c104f7b7ad98dbdca9a"
+  },
+  {
+    "path": "backend/app/plan_pdf.py",
+    "bytes": 23444,
+    "sha256": "6db3008dd59da9fc16f9f81ea28d5eb0c288aa48bfab55f4dcb8381086591bd7"
+  },
+  {
+    "path": "backend/app/plan_schemas.py",
+    "bytes": 4698,
+    "sha256": "456d6c78e5bc6ff0248cbc25466659cc6dd88d65c3d5496183a7597ac4a8e1a1"
+  },
+  {
+    "path": "backend/app/plan_service.py",
+    "bytes": 9697,
+    "sha256": "4659ff56eba163a010f2f0643eef137e1102e8244fa15fc9f50a01b404c3d1d8"
+  },
+  {
+    "path": "backend/app/retrieval.py",
+    "bytes": 12318,
+    "sha256": "eabb6dabaed847fef0cd0318d43cea0e07105e238b8538919faa41b0829bbed6"
+  },
+  {
+    "path": "backend/app/schemas.py",
+    "bytes": 1543,
+    "sha256": "8225d160e7caf337c65672a0eb66475916553669f908b01b71ec8e29a2e33b3b"
+  },
+  {
+    "path": "backend/scripts/check_connectivity.py",
+    "bytes": 2392,
+    "sha256": "f9f302987eb0ee62e1e375236aaa88e19e76ad0f30de559bcde01415722a0205"
+  },
+  {
+    "path": "backend/scripts/check_readiness.py",
+    "bytes": 6032,
+    "sha256": "cd21fa43b32718d32661ca6450a3a9e2ddda228597ba081e303abc78f34972a9"
+  },
+  {
+    "path": "backend/scripts/configure_secrets.py",
+    "bytes": 3565,
+    "sha256": "974ac1a1df3ad4da684b2e8b372951e257febcc43e5f30337dc395a5069065bd"
+  },
+  {
+    "path": "backend/scripts/ingest_knowledge.py",
+    "bytes": 2065,
+    "sha256": "54449ee4593ebd483d1baddfd0ff89e5bce14645a661a481e1f174a1b4a6cb60"
+  },
+  {
+    "path": "backend/scripts/review_sources.py",
+    "bytes": 2321,
+    "sha256": "adab419d289b40b7055b948f7fc10790434e029332067fa5390f7e9f86c3e862"
+  },
+  {
+    "path": "backend/scripts/verify_customer_demo.py",
+    "bytes": 3648,
+    "sha256": "0d2ee8983f21a9f2b0f9739651deef1bba076fe3e760f1b2aa3893c9c1b9b6b0"
+  },
+  {
+    "path": "backend/tests/test_calculators.py",
+    "bytes": 5651,
+    "sha256": "6a2115fea350d94d17928c70795f6f4c0bd37b3e57facd0227e6ed03d8cc0114"
+  },
+  {
+    "path": "backend/tests/test_client_ui.cjs",
+    "bytes": 1597,
+    "sha256": "43ad26c13f2c0b3ba77da8365bad37c8bbc38c99a131f5811c7ce3dc94cbf502"
+  },
+  {
+    "path": "backend/tests/test_customer_demo.py",
+    "bytes": 5279,
+    "sha256": "b8d18f2e285598c9284f585b0631430a2ac32a01e8af3e494c7af108d4ad014e"
+  },
+  {
+    "path": "backend/tests/test_delivery_v04.py",
+    "bytes": 7102,
+    "sha256": "bfe7a7673547e9f598e18e11e7786c237d04458c2dabe535740f7145298e2748"
+  },
+  {
+    "path": "backend/tests/test_plan_report.py",
+    "bytes": 8179,
+    "sha256": "cef87a052e9ebb55694d418d53e537f0d7ab8007cbe0b226ff80acdcbaa4324d"
+  },
+  {
+    "path": "backend/tests/test_project_readiness.py",
+    "bytes": 4387,
+    "sha256": "3a9c3f72e3796fdda0f331af581f95499a4e0db587407d87a4501c8391f36d00"
+  },
+  {
+    "path": "data/cases/assumption_demo.json",
+    "bytes": 2205,
+    "sha256": "db336e1d5b19e791e2d2e49278fdfdcf2961614e20f63ec13b27a1e00b9bcaf1"
+  },
+  {
+    "path": "data/cases/wangyue_case.json",
+    "bytes": 4618,
+    "sha256": "d4849e1bd8edb42b884174b4f10d4dfcfe5ed97543ee0e1a77e0f5a623fe8893"
+  },
+  {
+    "path": "data/knowledge/reviewed_documents.json",
+    "bytes": 1381,
+    "sha256": "3a148473568b0539de650e4935dfe3e44c8bb8dad935061ce58be8018eeea5e4"
+  },
+  {
+    "path": "data/templates/carbon_factors.csv",
+    "bytes": 139,
+    "sha256": "c02c3706afe6b1f7420771ceea77aea7d7a0b8c063d62df6450b64bf99bea7f9"
+  },
+  {
+    "path": "data/templates/knowledge_manifest.csv",
+    "bytes": 137,
+    "sha256": "b843eb8b082c0df93f57001aa7760e61f5da42e745ca74b720d305bae075b63b"
+  },
+  {
+    "path": "data/templates/options.csv",
+    "bytes": 147,
+    "sha256": "eb88264bff1d4bbe62f7812b5f56ada8f6f8e3f906121f87cc57066ec1c0903d"
+  },
+  {
+    "path": "data/templates/policies.csv",
+    "bytes": 147,
+    "sha256": "ba1c481d9e61b793e6629c5794d625747fd3d5d27a79bf79c51eb2602bbdb3e3"
+  },
+  {
+    "path": "data/templates/project_baseline.json",
+    "bytes": 391,
+    "sha256": "b6ed9cd9f5dd7d91acbcb011b618082eb9b64a4c3798b204f9f6d15315b748b4"
+  },
+  {
+    "path": "data/templates/README.md",
+    "bytes": 1144,
+    "sha256": "258d829957d17eaea362ff550173df8a1ccde72ce7a38b8b8b55d9944b96abc4"
+  },
+  {
+    "path": "data/templates/solar_resources.csv",
+    "bytes": 132,
+    "sha256": "23568d0c218d68001ffd43068b190b94ce8d93451afcee0bbac6db5b4923efed"
+  },
+  {
+    "path": "data/templates/tariffs.csv",
+    "bytes": 142,
+    "sha256": "7c378f5749904c278b2b57940165c238e427bd43d3359d9b15427cb3c4c73ce5"
+  },
+  {
+    "path": "deploy/部署与验收说明.txt",
+    "bytes": 4339,
+    "sha256": "b25dd7b75b6e6b6b9ee779e2c2f921dbcaadf350b324c9a40a76cf606aeb0106"
+  },
+  {
+    "path": "deploy/compose.yaml",
+    "bytes": 893,
+    "sha256": "89e26e9dc1ff9914c2c8cd6f7decde0aa4aa5ec47d8d33275e9bca873487a451"
+  },
+  {
+    "path": "deploy/Dockerfile",
+    "bytes": 1045,
+    "sha256": "2ad164a32067b075da9996dbc0ed93eec4ad049d8d436f21af59f5c1fc3fb486"
+  },
+  {
+    "path": "deploy/requirements.txt",
+    "bytes": 315,
+    "sha256": "b5601e5516ecc4b38341cac3c46f0cd41780e37e79bc026ab9dafddbafe21f0d"
+  },
+  {
+    "path": "docs/技术架构_v0.6.svg",
+    "bytes": 6643,
+    "sha256": "d6b84a3e1f84386e0c9aeca3a5f3d132fb32f26049bd0dbe1ab72bf0f536f1ea"
+  },
+  {
+    "path": "docs/技术说明_v0.6.pdf",
+    "bytes": 236566,
+    "sha256": "8b5568cb8dd16f20b4682a884134db519b1748962e75eb078bd2d6c6b3521dd7"
+  },
+  {
+    "path": "docs/数据与材料收集清单.md",
+    "bytes": 1477,
+    "sha256": "5abadcb57fac408255facf444ba4dd5d5ea3876e293bccbb4f155d52542c76a2"
+  },
+  {
+    "path": "docs/主工程README_v0.6.md",
+    "bytes": 7318,
+    "sha256": "8aea249b7e8229d4d889be5ed732740990ba00bc9955b93b83d08c41bbe65ed8"
+  },
+  {
+    "path": "docs/API与平台操作清单.md",
+    "bytes": 3701,
+    "sha256": "b1c7efa0cce23b00e0465bc1dcf73c82d73a16647afb85e6193e60600c6afb1c"
+  },
+  {
+    "path": "数据收集包/02_能耗账单与电价/全国_生态环境部国家统计局_公告2024年第33号_电力二氧化碳排放因子公告全文_2022年数据_2024-12-26.html",
+    "bytes": 103304,
+    "sha256": "d6a63be72587e4fa80396b8c53fc83fa888adc2a4e2d1c8b5da91c0505f7dd2b"
+  },
+  {
+    "path": "数据收集包/04_政策规范与RAG知识库/政策原文/浙江省_浙江省人民政府_浙政发〔2024〕10号_浙江省推动大规模设备更新和消费品以旧换新若干举措_2024-04-09.pdf",
+    "bytes": 476834,
+    "sha256": "97c3d42dbdb99b1c9bd45ef92cf8f945023924ea8d48b516a96e1b9ad88935ed"
+  },
+  {
+    "path": "数据收集包/04_政策规范与RAG知识库/政策原文/浙江省杭州市_杭州市城乡建设委员会等_杭建科〔2026〕27号_关于推进公共机构既有建筑节能降碳改造的通知_2026-03-20.pdf",
+    "bytes": 798618,
+    "sha256": "4a656b6a1080324100ea4f919adb3b5f35759f464a28bd03e48ebbf7c2fdeb7c"
+  },
+  {
+    "path": "数据收集包/08_已整理结构化数据/knowledge_manifest.csv",
+    "bytes": 2389,
+    "sha256": "84b817c33c1a70cd95087645a56067ceca8123ae4b37327607687a1ae50e7c72"
+  }
+]

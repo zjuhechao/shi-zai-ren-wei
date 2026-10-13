@@ -1,0 +1,11 @@
+# Direct dependency versions verified in the Windows development environment.
+# Linux container build still requires target-host verification.
+fastapi==0.143.0
+uvicorn[standard]==0.54.0
+openai==3.28.0
+chromadb==1.5.9
+python-multipart==0.0.32
+python-dotenv==1.2.4
+pymupdf==1.28.2
+python-docx==1.2.0
+reportlab==4.5.1

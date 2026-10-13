@@ -1,0 +1,8 @@
+backend/.env
+backend/.env.*.tmp
+.venv/
+storage/
+__pycache__/
+*.py[cod]
+*.log
+/源码仓库_v0.6.bundle

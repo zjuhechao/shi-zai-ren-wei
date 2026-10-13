@@ -1,0 +1,18 @@
+{
+  "project_id": null,
+  "project_name": null,
+  "region": null,
+  "address": null,
+  "latitude": null,
+  "longitude": null,
+  "construction_year": null,
+  "floor_area_m2": null,
+  "floor_count": null,
+  "roof_available_area_m2": null,
+  "annual_electricity_kwh": null,
+  "annual_electricity_source": null,
+  "data_date": null,
+  "photo_files": [],
+  "drawing_files": [],
+  "notes": null
+}
