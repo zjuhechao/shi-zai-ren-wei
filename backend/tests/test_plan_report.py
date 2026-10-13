@@ -52,6 +52,39 @@ def fake_agent():
 
 
 class PlanReportTests(unittest.TestCase):
+    def test_blank_required_plan_text_rejected(self):
+        required_fields={'measures':['title','scope','action','prerequisite','acceptance'],
+                         'stages':['stage','actions','owner','gate'],
+                         'risks':['risk','mitigation','release_condition'],
+                         'verification':['item','method','record']}
+        for blank in [' \t\n ', '\u00a0\u3000', '\u200b \ufeff \u200b']:
+            for group, fields in required_fields.items():
+                for field in fields:
+                    data=narrative();data[group][0][field]=blank
+                    with self.subTest(group=group,field=field,blank=repr(blank)):
+                        with self.assertRaises(ValidationError):validate_narrative(data,{'R1'})
+            for group in ['goals','procurement_notes']:
+                data=narrative();data[group][0]=blank
+                with self.subTest(group=group,blank=repr(blank)):
+                    with self.assertRaises(ValidationError):validate_narrative(data,{'R1'})
+
+    def test_blank_project_provenance_rejected_before_cloud(self):
+        for field in ['projectName','region','electricityPriceSource','electricityPriceUrl','carbonSource','carbonUrl']:
+            data=payload();data['base'][field]=' \u00a0\u3000\u200b\ufeff '
+            with self.subTest(field=field), patch('app.main.get_agent') as agent:
+                self.assertEqual(TestClient(app).post('/api/reports/plan',json=data).status_code,422)
+                agent.assert_not_called()
+
+    def test_optional_plan_text_may_be_empty(self):
+        data=payload();data['base'].update(assumptionNotice='',address='\u200b\ufeff');data['objective']=''
+        parsed=PlanRequest.model_validate(data)
+        self.assertEqual(parsed.base.address,'')
+        self.assertEqual(parsed.base.assumptionNotice,'')
+        self.assertEqual(parsed.objective,'')
+        draft=narrative()
+        for measure in draft['measures']:measure['evidence_ids']=[]
+        self.assertEqual(validate_narrative(draft,{'R1'}).measures[0].evidence_ids,[])
+
     def test_calculations_recompute_input_and_comparison(self):
         result=calculate_plan(PlanRequest.model_validate(payload()))
         self.assertEqual(result['scenarios'][0]['annualNetBenefit'],6156)

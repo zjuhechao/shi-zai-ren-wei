@@ -3,7 +3,9 @@ from __future__ import annotations
 import csv
 import json
 import unittest
+import tempfile
 from datetime import date
+from pathlib import Path
 from unittest.mock import patch
 
 from fastapi.testclient import TestClient
@@ -57,6 +59,28 @@ class ProjectReadinessTests(unittest.TestCase):
         self.assertNotIn("annual_energy_saving_kwh", safe)
         self.assertGreaterEqual(len(case["blocking_inputs"]), 5)
 
+    def test_real_case_co2_reference_is_not_co2e_prefill(self) -> None:
+        case = json.loads((PROJECT_ROOT / "data" / "cases" / "wangyue_case.json").read_text(encoding="utf-8"))
+        self.assertNotIn("carbon_factor_kgco2e_per_kwh", case["safe_prefill"])
+        self.assertNotIn("carbon_source", case["safe_prefill"])
+        self.assertEqual(case["carbon_factor_reference"]["unit"], "kgCO2/kWh")
+        self.assertEqual(case["carbon_factor_reference"]["gas_coverage"], "CO2")
+        self.assertFalse(case["carbon_factor_reference"]["use_in_calculation"])
+        self.assertTrue(any("气体覆盖" in item["field"] and "单位" in item["field"] for item in case["blocking_inputs"]))
+
+    def test_fixed_demo_is_available_without_delivery_folder(self) -> None:
+        with tempfile.TemporaryDirectory() as folder:
+            root = Path(folder)
+            asset = root / 'assets' / 'reports' / 'qinghe_plan_demo.pdf'
+            asset.parent.mkdir(parents=True)
+            asset.write_bytes((PROJECT_ROOT / 'assets' / 'reports' / 'qinghe_plan_demo.pdf').read_bytes())
+            with patch('app.main.PROJECT_ROOT', root):
+                response = TestClient(app).get('/api/demo/plan.pdf')
+                self.assertEqual(response.status_code, 200)
+                self.assertTrue(response.content.startswith(b'%PDF-'))
+                self.assertEqual(TestClient(app).get('/assets/reports/qinghe_plan_demo.pdf').status_code, 404)
+            self.assertFalse((root / '04_完整方案交付_v0.6').exists())
+
     def test_public_routes_and_deterministic_calculator(self) -> None:
         client = TestClient(app)
         health = client.get("/api/health")
@@ -76,7 +100,7 @@ class ProjectReadinessTests(unittest.TestCase):
                 "subsidy_cny": 0,
                 "annual_energy_saving_kwh": 12000,
                 "electricity_price_cny_per_kwh": 0.538,
-                "carbon_factor_kgco2e_per_kwh": 0.4974,
+                "carbon_factor_kgco2e_per_kwh": 0.5,
                 "annual_om_cny": 0,
                 "source_name": "test",
                 "source_url": "local:test",
@@ -85,7 +109,7 @@ class ProjectReadinessTests(unittest.TestCase):
         )
         self.assertEqual(result.status_code, 200)
         self.assertEqual(result.json()["annualBenefit"], 6456)
-        self.assertEqual(result.json()["annualCarbon"], 5968.8)
+        self.assertEqual(result.json()["annualCarbon"], 6000)
 
 
 if __name__ == "__main__":

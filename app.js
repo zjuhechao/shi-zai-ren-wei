@@ -28,10 +28,6 @@ const FALLBACK_CASE = {
   safe_prefill: {
     project_name: "望月公寓",
     region: "浙江省 杭州市",
-    carbon_factor_kgco2e_per_kwh: 0.4974,
-    carbon_source: "生态环境部、国家统计局《关于发布2023年电力二氧化碳排放因子的公告》（公告2025年第47号）",
-    carbon_source_url: "https://www.mee.gov.cn/xxgk2018/xxgk/xxgk01/202512/t20251231_1139517.html",
-    carbon_data_date: "2025-12-31",
   },
   available_evidence: [
     { item: "政策、标准与价格资料", status: "已整理", detail: "知识清单40条，政策11条，电价57条，碳因子91条，改造参考报价30条。" },
@@ -39,6 +35,7 @@ const FALLBACK_CASE = {
     { item: "建筑照片", status: "限内部核验", detail: "8张图片中部分含网站水印、楼栋或房间标识，来源与脱敏状态需重新确认。" },
   ],
   blocking_inputs: [
+    { priority: "P0", field: "电力排放因子气体覆盖、单位与核算边界", why: "当前字段为kgCO2e/kWh，官方CO2因子保留为线索，不能未经核对直接改标或自动填入。" },
     { priority: "P0", field: "连续12个月用电量与电费", why: "缺失时不能计算年收益或回收期。" },
     { priority: "P0", field: "试点楼栋精确地址与区县", why: "用于核对区县政策和适用电价。" },
     { priority: "P0", field: "外墙、窗、屋顶可核验工程量", why: "决定项目投资，估算值不能直接采用。" },
@@ -120,7 +117,7 @@ function renderDemoCase(data) {
   state.demoCase = data;
   const p0 = (data.blocking_inputs || []).filter((item) => item.priority === "P0");
   $("case-overview").innerHTML = `
-    <div class="case-metric"><span>知识资料</span><strong>40 条索引</strong><small>政策、标准、电价、因子与报价</small></div>
+    <div class="case-metric"><span>原案例历史台账</span><strong>40 条索引（原机记录）</strong><small>当前可用资料以资料库状态为准</small></div>
     <div class="case-metric"><span>可计算方案</span><strong>0 项</strong><small>未补核心项目数据前不输出ROI</small></div>
     <div class="case-metric"><span>P0关键缺口</span><strong>${p0.length} 项</strong><small>账单、区县、工程量、节能量</small></div>`;
   $("case-evidence").innerHTML = (data.available_evidence || [])
@@ -171,7 +168,7 @@ async function loadWangyueFields() {
   $("carbon-source").value = prefill.carbon_source || "";
   $("carbon-url").value = prefill.carbon_source_url || "";
   $("baseline-date").value = prefill.carbon_data_date || "";
-  $("case-note").textContent = "已加载项目名称、地区和官方碳因子。电量、电费、用户类别、工程量、节能量和项目报价仍为空，需按清单补充后才能生成数值报告。";
+  $("case-note").textContent = "已加载项目名称和地区。官方CO2资料仅作线索；当前kgCO2e因子须确认气体覆盖、单位和核算边界后另行填写。电量、电费、用户类别、工程量、节能量和项目报价仍须补齐。";
   $("project-heading").scrollIntoView({ behavior: "smooth", block: "start" });
 }
 

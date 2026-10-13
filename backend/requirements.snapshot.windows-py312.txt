@@ -58,9 +58,9 @@ pillow==12.3.0
 propcache==0.5.4
 protobuf==7.36.2
 pybase64==1.5.1
-pydantic==2.14.0
+pydantic==2.14.1
 pydantic-settings==2.15.0
-pydantic_core==2.50.0
+pydantic_core==2.50.1
 Pygments==2.21.0
 pymupdf==1.28.2
 PyPika==0.51.1
@@ -83,7 +83,7 @@ starlette==1.7.0
 tenacity==9.2.1
 tokenizers==0.23.3
 tqdm==4.70.1
-truststore==0.10.4
+truststore==0.10.5
 typer==0.27.3
 typing-inspection==0.4.4
 typing_extensions==4.16.0

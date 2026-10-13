@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import io
 import os
+import re
 from pathlib import Path
 from html import escape
 from urllib.parse import urlsplit
@@ -38,6 +39,33 @@ def register_fonts():
 
 def amount(value):
     return '不输出' if value is None else f'{value:,.2f}'
+
+
+def evidence_excerpt(source, measures):
+    """Select only text already present in a cited chunk; never invent a quotation."""
+    text = str(source['content'])
+    # This clause map applies only to the identified 51141 standard. Other
+    # retrieved documents keep their ordinary excerpt, not a guessed section.
+    if not re.search(r'GB\s*/\s*T\s*51141(?:\D|$)', str(source.get('title', ''))):
+        return text[:100] + ('……' if len(text) > 100 else '')
+    related = [m for m in measures if source['reference_id'] in m['evidence_ids']]
+    context = ' '.join(str(m.get('title', '')) for m in related)
+    clause_ids = []
+    if '计量' in context:
+        clause_ids.append('1')
+    if any(word in context for word in ('照明', '灯具', '控制')):
+        clause_ids.extend(['7', '8'])
+    excerpts = []
+    for clause_id in clause_ids:
+        marker = re.search(r'8\s*\.\s*2\s*\.\s*' + clause_id + r'(?!\d)', text)
+        if not marker:
+            continue
+        remainder = text[marker.end():]
+        next_clause = re.search(r'8\s*\.\s*2\s*\.\s*\d', remainder)
+        end = marker.end() + next_clause.start() if next_clause else len(text)
+        segment = text[marker.start():end].strip()
+        excerpts.append(segment[:100] + ('……' if len(segment) > 100 else ''))
+    return '；'.join(excerpts) if excerpts else text[:100] + ('……' if len(text) > 100 else '')
 
 
 class Cashflow(Flowable):
@@ -117,7 +145,11 @@ def render_plan_pdf(plan:dict)->bytes:
     story.extend([Spacer(1,28),p('室在人为  /  客户方案交付','small'),Spacer(1,20),
                   p('低碳改造方案\n与分析报告','title'),p(base['projectName'],'h1'),p(nature+' · 前期策划与方案比选','h2')])
     para(f"地区：{base['region']}  |  数据基准日：{base['baselineDate']}")
-    para(f"报告版本：v{plan['version']}  |  生成日期：{plan['created_at'][:10]}")
+    para(f"原API生成版本：v{plan['version']}  |  原生成日期：{plan['created_at'][:10]}" if plan.get('editorial_review',{}).get('reviewed_on') else
+         f"报告版本：v{plan['version']}  |  生成日期：{plan['created_at'][:10]}")
+    review=plan.get('editorial_review',{})
+    if review.get('reviewed_on'):
+        para(f"内容复核：{review['revision']}  |  {review['reviewed_on']}  |  纳入材料版本：v{review.get('presentation_release',plan['version'])}")
     para(f"报告编号：{plan['report_id'][:12]}")
     story.append(Spacer(1,14))
     table(['当前方案净投资 / 元','年净节省 / 元','静态回收期 / 年'],[[amount(first['netInvestment']),amount(first['annualNetBenefit']),amount(first['payback'])]])
@@ -149,7 +181,7 @@ def render_plan_pdf(plan:dict)->bytes:
     chapter('02  整体改造路径与边界')
     para(n['wider_building_strategy'])
     table(['系统','本次处理方式','进入量化设计前的条件'],[
-        ['已录入改造方案','详见后续措施包及确定性测算。所有措施包费用均暂包含在输入总投资中，不另行叠加。','核对勘察、设备数量、分项报价与节能量依据。'],
+        ['已录入改造方案','总投资按用户录入的综合口径'+('作假设测算' if assumed else '测算')+'，分项范围尚未核定，不另行虚构叠加费用。','核对勘察、设备数量、分项报价与节能量依据。'],
         ['围护结构 / 门窗','仅列为待诊断方向，不输出传热系数、改造厚度和节能率。','图纸、构造、面积、窗墙比、当地气候及热工计算。'],
         ['空调 / 通风 / 热水','未输入时不进入本次金额与节能量合计。','设备清单、工况、运行时间、分项能耗及负荷计算。'],
         ['屋顶光伏','仅在用户录入光伏方案时量化；不能由屋顶照片推算容量。','屋顶权属、承载复核、资源条件、用电曲线及接入条件。'],
@@ -158,6 +190,7 @@ def render_plan_pdf(plan:dict)->bytes:
     heading('推荐推进顺序')
     para('先核实建筑现状和能源基线，再开展候选措施设计与样板验证，取得正式工程量和报价后完成投资决策。施工验收与持续能耗核验是两个不同环节。当前不直接推荐整体项目开工。')
     para('只改变投资数额的比较情景不是第二种技术设计；它用于检验报价变化对经济性的影响，不能代表更低价格已经取得，也不能据此改变工程质量或安全条件。')
+    para('如增加计量、控制、电气整改、设计或监测工作，须确认其费用已计入总投资，才能沿用本报告回收期；否则应更新投资后重算。')
 
     chapter('03  技术改造措施包')
     para('下列为模型基于项目输入与检索片段形成的设计建议，均须专业复核。未列直接引用的内容属于拟议做法，不是已核验的标准条文。')
@@ -174,7 +207,7 @@ def render_plan_pdf(plan:dict)->bytes:
     table(['方案','净投资 / 元','年净节省 / 元','回收期 / 年','性质'],rows,[140,82,88,72,WIDTH-382])
     table(['分析项目','解释'],[
         ['经济判断边界','静态回收期只反映输入条件下的简单回收时间；未计折现、融资、设备衰减、更新替换、残值与税费。'],
-        ['投资构成','总投资为输入值；设备、安装、调试、设计、监测及不可预见费的分项报价尚未获得，不人为拆分金额。'],
+        ['投资构成','总投资为用户输入的综合口径'+('假设' if assumed else '金额，尚待核验')+'；设备、安装、调试、设计、监测及不可预见费的分项报价尚未获得。新增配套费用须确认已计入，未计入时应更新投资后重算，不人为拆分金额。'],
         ['折现指标','未提供折现率与经确认的设备寿命，因此不输出NPV、IRR或全生命周期盈利结论。'],
         ['补贴资格','仅按用户输入的补贴金额计算，不因检索到政策而自动认定资格或补足补贴。'],
         ['选择建议','先验证效果和安全，再获取可比口径报价；任何降价情景均须维持相同工程范围和品质条件。'],
@@ -271,8 +304,8 @@ def render_plan_pdf(plan:dict)->bytes:
         if urlsplit(url).scheme in {'http','https'}:
             story.append(Paragraph('来源：<link href="'+escape(url,quote=True)+'" color="#087b77">'+escape(url)+'</link>',styles['small']))
         else:story.append(p('来源：'+url,'small'))
-        story.append(p('片段定位：'+str(source.get('chunk_index'))+'；文件SHA256：'+str(source.get('checksum')),'small'))
-        story.append(p('片段提示：'+str(source['content'])[:100]+'……（请回到原文核查上下文）','small'))
+        story.append(p('片段编号：'+str(source.get('chunk_index'))+'（零基切分编号，非原文页码）；文件SHA256：'+str(source.get('checksum')),'small'))
+        story.append(p('片段提示：'+evidence_excerpt(source,n['measures'])+'（仅摘取当前检索片段；请回到原文核查上下文）','small'))
         block=story[block_start:]
         story[block_start:]=[KeepTogether(block)]
     heading('确定性输入来源')
@@ -286,7 +319,11 @@ def render_plan_pdf(plan:dict)->bytes:
           ['生成时间',plan['created_at']],['完整报告编号',plan['report_id']],['输入指纹 SHA256',plan['input_sha256']]], [106,WIDTH-106])
     para('模型只撰写定性草案；数值表格与曲线由后端重新计算。本文档经过结构和数字字段检查，但不代表全部模型语义已由专家审核。正式实施前必须完成专业设计与资料核验。')
     if plan.get('editorial_review'):
+        if review.get('reviewed_on'):
+            story.append(CondPageBreak(340))
         heading('文本复核修订记录（非工程审查）')
+        if review.get('reviewed_on'):
+            para(f"本次为{review['reviewed_on']}内容复核{review['revision']}，纳入v{review.get('presentation_release',plan['version'])}材料。原API生成版本v{plan['version']}、时间、报告编号及输入指纹均保留；本次没有重新调用模型或向量服务。")
         bullets(plan['editorial_review']['changes'])
         para('保留原始模型调用和检索记录；本次文字与引用范围修订未改变任何输入或测算结果，不代表有资质的工程人员已经审核。')
     output=io.BytesIO()

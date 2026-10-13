@@ -2,13 +2,21 @@
 from __future__ import annotations
 
 from datetime import date
-from typing import Literal
-from pydantic import BaseModel, ConfigDict, Field, model_validator
+from typing import Annotated, Literal
+import re
+from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 from .schemas import GenericScenarioRequest, PvScenarioRequest
 
 
 class BoundedModel(BaseModel):
-    model_config = ConfigDict(extra="forbid", allow_inf_nan=False, str_max_length=1800)
+    model_config = ConfigDict(extra="forbid", allow_inf_nan=False, str_max_length=1800, str_strip_whitespace=True)
+
+    @field_validator("*", mode="before")
+    @classmethod
+    def trim_text(cls, value):
+        def trim(item):
+            return re.sub(r"^[\s\u200b\ufeff]+|[\s\u200b\ufeff]+$", "", item) if isinstance(item, str) else item
+        return [trim(item) for item in value] if isinstance(value, list) else trim(value)
 
 
 class PlanBase(BoundedModel):
@@ -70,39 +78,39 @@ class PlanRequest(BoundedModel):
 
 
 class Measure(BoundedModel):
-    title: str = Field(max_length=70)
-    scope: str = Field(max_length=220)
-    action: str = Field(max_length=450)
-    prerequisite: str = Field(max_length=280)
-    acceptance: str = Field(max_length=280)
+    title: str = Field(min_length=1, max_length=70)
+    scope: str = Field(min_length=1, max_length=220)
+    action: str = Field(min_length=1, max_length=450)
+    prerequisite: str = Field(min_length=1, max_length=280)
+    acceptance: str = Field(min_length=1, max_length=280)
     evidence_ids: list[str] = Field(max_length=4)
 
 
 class Stage(BoundedModel):
-    stage: str = Field(max_length=60)
-    actions: str = Field(max_length=320)
-    owner: str = Field(max_length=100)
-    gate: str = Field(max_length=220)
+    stage: str = Field(min_length=1, max_length=60)
+    actions: str = Field(min_length=1, max_length=320)
+    owner: str = Field(min_length=1, max_length=100)
+    gate: str = Field(min_length=1, max_length=220)
 
 
 class Risk(BoundedModel):
-    risk: str = Field(max_length=140)
-    mitigation: str = Field(max_length=320)
-    release_condition: str = Field(max_length=220)
+    risk: str = Field(min_length=1, max_length=140)
+    mitigation: str = Field(min_length=1, max_length=320)
+    release_condition: str = Field(min_length=1, max_length=220)
 
 
 class Verification(BoundedModel):
-    item: str = Field(max_length=90)
-    method: str = Field(max_length=350)
-    record: str = Field(max_length=250)
+    item: str = Field(min_length=1, max_length=90)
+    method: str = Field(min_length=1, max_length=350)
+    record: str = Field(min_length=1, max_length=250)
 
 
 class PlanNarrative(BoundedModel):
     diagnosis: str = Field(min_length=40, max_length=700)
-    goals: list[str] = Field(min_length=3, max_length=5)
+    goals: list[Annotated[str, Field(min_length=1)]] = Field(min_length=3, max_length=5)
     measures: list[Measure] = Field(min_length=3, max_length=5)
     wider_building_strategy: str = Field(min_length=40, max_length=650)
-    procurement_notes: list[str] = Field(min_length=3, max_length=5)
+    procurement_notes: list[Annotated[str, Field(min_length=1)]] = Field(min_length=3, max_length=5)
     stages: list[Stage] = Field(min_length=4, max_length=5)
     risks: list[Risk] = Field(min_length=4, max_length=5)
     verification: list[Verification] = Field(min_length=4, max_length=5)

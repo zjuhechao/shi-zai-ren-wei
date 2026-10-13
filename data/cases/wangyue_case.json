@@ -1,18 +1,30 @@
 {
   "case_id": "wangyue-2026-10-12",
   "project_name": "望月公寓",
-  "as_of_date": "2026-10-12",
+  "as_of_date": "2026-10-13",
   "region": "浙江省 杭州市",
   "case_status": "数据核验中",
   "safe_prefill": {
     "project_name": "望月公寓",
-    "region": "浙江省 杭州市",
-    "carbon_factor_kgco2e_per_kwh": 0.4974,
-    "carbon_source": "生态环境部、国家统计局《关于发布2023年电力二氧化碳排放因子的公告》（公告2025年第47号）",
-    "carbon_source_url": "https://www.mee.gov.cn/xxgk2018/xxgk/xxgk01/202512/t20251231_1139517.html",
-    "carbon_data_date": "2025-12-31"
+    "region": "浙江省 杭州市"
+  },
+  "carbon_factor_reference": {
+    "value": 0.4974,
+    "unit": "kgCO2/kWh",
+    "gas_coverage": "CO2",
+    "data_year": 2023,
+    "source": "生态环境部、国家统计局《关于发布2023年电力二氧化碳排放因子的公告》（公告2025年第47号）",
+    "source_url": "https://www.mee.gov.cn/xxgk2018/xxgk/xxgk01/202512/t20251231_1139517.html",
+    "publication_date": "2025-12-31",
+    "use_in_calculation": false,
+    "status": "保留官方CO2资料线索；气体覆盖、适用核算规则、地区、年份及购电边界须确认后另行录入，不自动作为CO2e因子。"
   },
   "available_evidence": [
+    {
+      "item": "官方电力CO2因子资料",
+      "status": "保留来源线索，计算口径待确认",
+      "detail": "公告2025年第47号附件记录浙江省2023年CO2因子0.4974 kgCO2/kWh；不自动填入当前kgCO2e/kWh字段，须先确认项目核算口径。"
+    },
     {
       "item": "政策、标准与价格资料",
       "status": "已整理",
@@ -43,6 +55,12 @@
     {"field": "envelope_u_values", "value": "墙≤1.5、屋面≤1.0、窗≤3.2 W/(m²·K)", "status": "参考限值，不是检测值"}
   ],
   "blocking_inputs": [
+    {
+      "priority": "P0",
+      "field": "电力排放因子的气体覆盖、单位与核算边界确认",
+      "why": "当前计算字段使用kgCO2e/kWh；官方资料为CO2因子，未经口径确认不能直接改标为CO2e。须核对适用核算规则、地区、年份和购电边界后提供明确因子。",
+      "accepted_format": "原始公告及附件PDF/网页归档；配套carbon_factors.csv或XLSX，写明value、unit、gas_coverage、data_year、region、applicable_boundary、source_url和复核记录。"
+    },
     {
       "priority": "P0",
       "field": "连续12个月用电量与电费",

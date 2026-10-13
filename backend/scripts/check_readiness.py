@@ -38,7 +38,7 @@ def collect_checks() -> dict:
                      "data/cases/wangyue_case.json", "data/cases/assumption_demo.json",
                      "docs/数据与材料收集清单.md"):
         record("asset:" + relative, (ROOT / relative).is_file(), relative)
-    demo = ROOT / "04_完整方案交付_v0.6" / "青禾社区_改造方案与分析报告.pdf"
+    demo = ROOT / "assets" / "reports" / "qinghe_plan_demo.pdf"
     demo_pdf = demo.is_file() and demo.read_bytes().startswith(b"%PDF-")
     record("demo_pdf", demo_pdf, "Fixed Qinghe assumed-case PDF included; not the result of changed inputs")
     manifest = ROOT / "数据收集包" / "08_已整理结构化数据" / "knowledge_manifest.csv"

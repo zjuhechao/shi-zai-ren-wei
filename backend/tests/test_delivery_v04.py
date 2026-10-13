@@ -50,6 +50,60 @@ class DeliveryV04Tests(unittest.TestCase):
         self.assertFalse(_region_matches("北京市", "浙江省 杭州市"))
         self.assertFalse(_region_matches("", "浙江省 杭州市"))
 
+    def test_region_formatting_notes_preserve_same_city(self):
+        self.assertTrue(_region_matches('浙江省杭州市','浙江省 杭州市（场景设定）'))
+        self.assertTrue(_region_matches('浙江省\u00a0杭州市','浙江省\u3000杭州市(假设案例)'))
+        self.assertTrue(_region_matches('浙江省/杭州市','浙江省杭州市上城区'))
+
+    def test_region_hierarchy_does_not_broaden_city_or_district_rules(self):
+        self.assertTrue(_region_matches('浙江省','浙江省杭州市上城区'))
+        self.assertTrue(_region_matches('浙江省杭州市','浙江省杭州市上城区'))
+        self.assertFalse(_region_matches('浙江省杭州市','浙江省'))
+        self.assertFalse(_region_matches('浙江省杭州市上城区','浙江省杭州市'))
+        self.assertFalse(_region_matches('浙江省/杭州市','浙江省宁波市'))
+
+    def test_region_cross_city_province_and_district_do_not_match(self):
+        for document, project in [('浙江省杭州市','浙江省宁波市'),('浙江省温州市','浙江省杭州市'),
+                                  ('浙江省杭州市','江苏省杭州市'),('浙江省杭州市上城区','浙江省杭州市余杭区'),
+                                  ('北京市','浙江省杭州市'),('北京市海淀区','北京市朝阳区')]:
+            with self.subTest(document=document,project=project):
+                self.assertFalse(_region_matches(document,project))
+
+    def test_region_bracketed_administrative_scope_and_unknown_labels(self):
+        self.assertTrue(_region_matches('浙江省杭州市（上城区）','浙江省杭州市上城区'))
+        self.assertFalse(_region_matches('浙江省杭州市（上城区）','浙江省杭州市余杭区'))
+        for document, project in [('未知地区','未知地区'),('浙江省','杭州'),('杭州市','浙江省杭州市'),
+                                  ('华东区域','浙江省杭州市'),('浙江省杭州市','未知')]:
+            with self.subTest(document=document,project=project):
+                self.assertFalse(_region_matches(document,project))
+        self.assertTrue(_region_matches('全国','未知'))
+        self.assertTrue(_region_matches('全国/华东区域/浙江省等','浙江省杭州市'))
+
+    def test_region_municipality_and_full_names_without_guessing_aliases(self):
+        self.assertTrue(_region_matches('北京市','北京市海淀区'))
+        self.assertTrue(_region_matches('重庆市/江北区','重庆市江北区'))
+        self.assertFalse(_region_matches('重庆市/江北区','重庆市渝北区'))
+        self.assertTrue(_region_matches('台湾省','台湾省台北市'))
+        self.assertTrue(_region_matches('浙江省（全省）','浙江省杭州市'))
+        self.assertFalse(_region_matches('浙江省','浙/杭州'))
+        self.assertFalse(_region_matches('台湾','台湾省台北市'))
+        self.assertFalse(_region_matches('全省','浙江省杭州市'))
+        self.assertFalse(_region_matches('浙江省/未知区县','浙江省杭州市上城区'))
+        self.assertFalse(_region_matches('浙江省/上城区','浙江省杭州市上城区'))
+
+    def test_region_filter_selects_local_document_before_embedding(self):
+        kb=LocalKnowledgeBase.__new__(LocalKnowledgeBase);kb.collection=Mock()
+        kb.collection.count.return_value=3
+        metadata=[{'document_id':'hz','region':'浙江省杭州市','category':'policy'},
+                  {'document_id':'nb','region':'浙江省宁波市','category':'policy'},
+                  {'document_id':'unknown','region':'未知','category':'policy'}]
+        kb.collection.get.return_value={'metadatas':metadata}
+        kb._embed=Mock(return_value=[[1.,0.]])
+        kb.collection.query.return_value={'documents':[['公开测试内容']], 'metadatas':[[metadata[0]]], 'distances':[[.1]]}
+        result=kb.search('公共建筑改造',region='浙江省 杭州市（场景设定）',category='policy')
+        self.assertEqual(kb.collection.query.call_args.kwargs['where'],{'document_id':{'$in':['hz']}})
+        self.assertEqual(result[0]['document_id'],'hz')
+
     def test_secret_config_update_preserves_unrelated_settings(self):
         text = update_env_text("# comment\nAPP_PORT=8000\nLLM_API_KEY=\nLLM_API_KEY=old\n", {"LLM_API_KEY": "UNIT_TEST_NOT_A_SECRET"})
         self.assertEqual(text.count("LLM_API_KEY="), 1)

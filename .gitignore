@@ -1,8 +1,14 @@
 backend/.env
-backend/.env.*.tmp
+backend/.env.*
+**/.env
+**/.env.*
+!backend/.env.example
 .venv/
 storage/
 __pycache__/
 *.py[cod]
 *.log
-/源码仓库_v0.6.bundle
+/源码仓库_*.bundle
+*.bundle
+*.zip
+/git_release/

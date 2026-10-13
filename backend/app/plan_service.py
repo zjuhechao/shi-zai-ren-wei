@@ -141,7 +141,7 @@ def generate_plan(payload: PlanRequest, agent: LowCarbonAgent) -> dict:
     else:
         raise RuntimeError("模型方案两次未通过结构化检查；未生成替代报告") from last_error
     now=datetime.now(timezone.utc).isoformat()
-    return {"report_id":uuid4().hex,"version":"0.6.0","created_at":now,
+    return {"report_id":uuid4().hex,"version":"0.6.1","created_at":now,
             "input_sha256":hashlib.sha256(request_json.encode()).hexdigest(),
             "request":payload.model_dump(mode="json"),"calculations":calculations,
             "narrative":narrative.model_dump(),"sources":sources,"retrieval_runs":retrieval_runs,

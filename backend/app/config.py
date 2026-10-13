@@ -106,6 +106,6 @@ def require_embedding_settings(settings: Settings) -> None:
         missing.append("EMBEDDING_MODEL")
     if missing:
         raise RuntimeError(
-            f"缺少语义向量配置：{', '.join(missing)}。DeepSeek 不提供文本向量接口，"
-            "请配置阿里云百炼/OpenAI兼容嵌入服务，或按说明改用本地中文向量模型。"
+            f"缺少语义向量配置：{', '.join(missing)}。本项目需独立向量配置，"
+            "当前仅支持百炼/OpenAI兼容向量接口；本地中文向量模型尚未实现。"
         )

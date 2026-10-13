@@ -14,9 +14,11 @@
 !app.js
 !client-ui.js
 !styles.css
-!04_完整方案交付_v0.6/
-04_完整方案交付_v0.6/**
-!04_完整方案交付_v0.6/青禾社区_改造方案与分析报告.pdf
+!assets/
+assets/**
+!assets/reports/
+assets/reports/**
+!assets/reports/qinghe_plan_demo.pdf
 backend/.env
 backend/.env.*
 !backend/.env.example

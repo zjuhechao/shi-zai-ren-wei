@@ -15,7 +15,7 @@ COPY data/cases /app/data/cases
 COPY data/knowledge /app/data/knowledge
 COPY index.html app.js client-ui.js styles.css /app/
 COPY ["docs/数据与材料收集清单.md", "/app/docs/"]
-COPY ["04_完整方案交付_v0.6/青禾社区_改造方案与分析报告.pdf", "/app/04_完整方案交付_v0.6/"]
+COPY assets/reports/qinghe_plan_demo.pdf /app/assets/reports/
 RUN python backend/scripts/check_readiness.py --json
 USER appuser
 EXPOSE 8000

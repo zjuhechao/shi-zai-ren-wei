@@ -39,13 +39,71 @@ def _validity(metadata: dict[str, Any], on_date: date) -> str:
     return "within_recorded_interval" if start and end else "unverified"
 
 
+def _normalize_region(value: str) -> str:
+    text = re.sub(r"[\s\u200b\ufeff]", "", value)
+    def remove_note(match):
+        note = match.group(1) or match.group(2) or ""
+        if note in {"全省", "全市", "全区", "全县", "本省", "本市", "本区", "本县"}:
+            return ""
+        # Parenthesized district names are part of the scope, not presentation notes.
+        return note if re.search(r"(?:省|自治区|特别行政区|市|地区|自治州|盟|区|县|旗)$", note) else ""
+    return re.sub(r"（([^）]*)）|\(([^)]*)\)", remove_note, text)
+
+
+def _region_hierarchy(value: str) -> tuple[str | None, str | None, str | None] | None:
+    """Compare supplied administrative labels; do not infer missing place names."""
+    if (not value or value in {"全省", "全市", "全区", "全县", "本省", "本市", "本区", "本县", "当地"}
+            or re.search(r"未知|不详|待补|待核|待定|不明|未明确|未提供", value)):
+        return None
+    remaining = value
+    province = None
+    for municipality in ("北京市", "天津市", "上海市", "重庆市"):
+        if remaining.startswith(municipality):
+            province, remaining = municipality, remaining[len(municipality):]
+            break
+    if province is None:
+        found = re.match(r"[\u4e00-\u9fff]{1,25}?(?:省|自治区|特别行政区)", remaining)
+        if found:
+            province, remaining = found.group(), remaining[found.end():]
+    city = None
+    found = re.match(r"[\u4e00-\u9fff]{1,25}?(?:自治州|地区|市|盟)", remaining)
+    if found:
+        city, remaining = found.group(), remaining[found.end():]
+    district = None
+    found = re.match(r"[\u4e00-\u9fff]{1,25}?(?:自治县|区|县|旗|市)", remaining)
+    if found:
+        district, remaining = found.group(), remaining[found.end():]
+    return (province, city, district) if not remaining and any((province, city, district)) else None
+
+
 def _region_matches(document_region: str, requested_region: str | None) -> bool:
     if not requested_region:
         return True
-    parts = [part.strip() for part in re.split(r"[/、,，;；|]", document_region) if part.strip()]
-    if not parts:
+    parts = [_normalize_region(part) for part in re.split(r"[/、,，;；|]", document_region)]
+    parts = [part for part in parts if part]
+    if any(part in {"全国", "通用"} for part in parts):
+        return True
+    requested = _region_hierarchy(_normalize_region(requested_region))
+    # Local scope requires an explicit province/municipality; unknown aliases are not mapped.
+    if requested is None or requested[0] is None:
         return False
-    return any(part in {"全国", "通用"} or part in requested_region or requested_region in part for part in parts)
+    scopes = []
+    for part in parts:
+        scope = _region_hierarchy(part)
+        if scope is None:
+            return False
+        if scopes and scope[0] is None:
+            previous = scopes[-1]
+            if previous[0]:
+                merged = _region_hierarchy("".join(item or "" for item in previous) + part)
+                scopes[-1] = merged or (None, None, None)
+                continue
+        scopes.append(scope)
+    for scope in scopes:
+        complete_district = not scope[2] or scope[1] or scope[0] in {"北京市", "天津市", "上海市", "重庆市"}
+        if scope[0] is not None and complete_district and all(part is None or part == requested[index] for index, part in enumerate(scope)):
+            return True
+    return False
 
 
 class LocalKnowledgeBase:

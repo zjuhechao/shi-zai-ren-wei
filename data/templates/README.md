@@ -4,7 +4,7 @@
 
 - `options.csv`：导入页面可直接读取的可复核改造方案。每一行是一项已获得节能量和投资依据的方案；没有来源、日期或核心数值的行不能导入。
 - `policies.csv`：导入页面可直接读取的政策目录。系统只按地区提示候选资料，不会自动判断补贴资格或把补贴计入计算。
-- `tariffs.csv`、`carbon_factors.csv`、`solar_resources.csv`：用于资料归档和后续自动取数；当前原型要求在页面中人工确认相关数值与来源。
+- `tariffs.csv`、`carbon_factors.csv`、`solar_resources.csv`：用于资料归档；自动取数属于后续方向，本版仍须在页面中人工确认相关数值与来源。`carbon_factors.csv` 的数值列明确要求 CO2e/kWh，不得将只覆盖 CO2 的官方系数直接改标签填写；须先确认气体覆盖、单位与核算边界，并在 notes 保留该确认记录。未确认值留空，原始 CO2 资料作为线索另行保存，不自动参与收益或减排测算。
 - `knowledge_manifest.csv`：RAG 知识库的资料索引模板。原始 PDF、网页归档、DOCX 或 OCR 文本应保存在受控目录，索引中保留版本和校验值。填表后仍须审核文件指纹与授权，再显式入库。
 - `project_baseline.json`：单个项目的基础信息结构。`null` 表示尚未取得数据。
 

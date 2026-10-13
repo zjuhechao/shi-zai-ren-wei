@@ -23,7 +23,7 @@ from .plan_schemas import PlanRequest
 
 app = FastAPI(
     title="室在人为 低碳改造智能决策体",
-    version="0.6.0",
+    version="0.6.1",
     description="多模态API、本地Chroma RAG和确定性Python计算工具后端。",
 )
 _ingest_lock = threading.Lock()
@@ -204,10 +204,10 @@ async def analyze_images(files: list[UploadFile] = File(...)) -> dict:
 
 @app.get("/api/demo/plan.pdf")
 def demo_plan_pdf() -> FileResponse:
-    path = PROJECT_ROOT / "04_完整方案交付_v0.6" / "青禾社区_改造方案与分析报告.pdf"
+    path = PROJECT_ROOT / "assets" / "reports" / "qinghe_plan_demo.pdf"
     if not path.is_file():
         raise HTTPException(status_code=404, detail="示范报告未随此源码副本提供，请使用完整方案生成入口")
-    return FileResponse(path, media_type="application/pdf", filename=path.name,
+    return FileResponse(path, media_type="application/pdf", filename="青禾社区_改造方案与分析报告.pdf",
                         headers={"Cache-Control": "no-store"})
 
 
