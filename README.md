@@ -1,6 +1,6 @@
 # 室在人为 v0.6 源码复现说明
 
-这是 2026-10-13 校赛非视频提交用的完整源码副本。目录本身是本地 Git 仓库，初始提交由 `Codex local release <codex-local-release@localhost>` 创建；尚未推送至远程平台，也没有公开访问网址。主工程的 README 另存为 `docs/主工程README_v0.6.md` 供版本追溯，以本页描述的干净副本范围为准。
+这是 2026-10-13 校赛非视频提交用的完整源码副本。提交包中的完整源码文件夹是本地 Git 仓库，初始提交由 `Codex local release <codex-local-release@localhost>` 创建；尚未推送至远程平台，也没有公开访问网址。单独提供的源码 ZIP 仅含已跟踪文件，不含隐藏 `.git` 和 Git bundle，须使用另外附带的 bundle 恢复版本历史。主工程的 README 另存为 `docs/主工程README_v0.6.md` 供版本追溯，以本页描述的干净副本范围为准。
 
 本副本包括前端、FastAPI 后端、DeepSeek Responses API 工具调用、百炼兼容文本向量接口、本地 Chroma、Python 确定性测算、完整方案 PDF 生成、测试、启动与部署配置。与主工程保持同一实现，不携带任何已配置密钥、已有向量库、私人照片、能耗账单、签章或视频。
 
