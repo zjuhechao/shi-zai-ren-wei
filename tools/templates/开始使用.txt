@@ -1,0 +1,47 @@
+室在人为 · Windows 本地应用包 v0.6.1
+应用包整理版：r3 / 2026-10-14（软件 API 版本保持 v0.6.1）
+
+这是“源码型本地应用包”，不是免安装 EXE，也不是已经部署的公网网站。
+与公开源码仓库使用同一套前后端及计算逻辑，包内不含团队 API Key、原机向量库、私人账单、签章或运行环境。
+
+先体验，不需要 API Key
+1. 右键 ZIP → 全部解压，放到自己的可写目录。不要在 ZIP 预览窗口中启动。
+2. 准备 Windows 64 位 Python 3.12。不会安装时，按 docs/下载后运行与配置.md 的官方安装管理器或 uv 方法操作。
+3. 双击 start-app.bat。首次需联网下载依赖；安装失败请按窗口提示排查，不代表应用已启动。
+4. 保持启动窗口打开，看到“Open http://… in your browser”后打开该地址。默认 http://127.0.0.1:8000/。
+5. 载入“假设情景演示” → 校验并生成初步方案报告 → 查看 Python 测算、比选和敏感性分析。
+6. 在“完整改造方案与分析 PDF”下载“青禾示范方案 PDF”。这是固定的、明确标注假设的示范资产，不随输入改变。
+
+生成自己的新方案，需要自己的服务配置
+1. 双击 configure-keys.bat，填写自己的 DeepSeek Key、百炼 Key 及百炼业务空间的完整 Base URL。
+2. Key 只保存在本机 backend/.env，不要发给别人，不要放入截图、Git 或压缩包。
+3. Base URL 使用自己的 https://…/compatible-mode/v1，不是 /api/v1 或 /embeddings。
+4. 完全停止自己启动的旧服务并重启。仅刷新网页不会更新已加载配置。
+5. 在应用根目录终端按完整教程执行连接检查、离线资料预检，确认授权与调用费用后显式入库三份公开资料。
+6. 入库后再停止并重启，检查真实 rag_chunks > 0；模型、向量、计算输入均就绪后，生成并下载新 PDF。
+
+重要区别
+· 没有 Key / 没有向量库时，新智能方案与 RAG 不会假装成功；本地测算及固定示范 PDF 仍可使用。
+· Chroma 随 Python 依赖安装，数据在自己的 storage/chroma；不需要额外的 Chroma 云账户或 GPU。
+· 本包的三份公开资料不是充分的住宅改造证据，也不包含固定青禾示范报告历史引用的全部标准。新结果不保证与固定 PDF 相同。
+· 真实项目仍需账单、报价、工程量、节能依据、授权等材料，缺项保留缺口。假设案例不能当作望月公寓真实收益。
+· 默认只监听本机。其他电脑不能使用你的 127.0.0.1 地址；应各自下载并配置。公网部署仍需鉴权、HTTPS、配额和数据保护。
+· 应用包不含开发测试和 Docker 文件；开发、测试或二次修改请下载完整源码。
+
+常见启动问题
+· Python 找不到：先验证 Python 3.12 的真实安装；可用下面的 -PythonPath 指定真实 python.exe。
+· 端口占用：选择其他空闲端口，不要停止其他项目服务。
+· PyPI 无法访问：可一次性指定 HTTPS 镜像，不更改全局 pip 设置。
+
+终端示例（在完整解压后的应用根目录执行）
+powershell -NoProfile -ExecutionPolicy Bypass -File .\start-app.ps1 -Port 18061
+powershell -NoProfile -ExecutionPolicy Bypass -File .\start-app.ps1 -PythonPath "C:\你的Python目录\python.exe" -Port 18061
+powershell -NoProfile -ExecutionPolicy Bypass -File .\start-app.ps1 -IndexUrl https://mirrors.zju.edu.cn/pypi/web/simple -Port 18061
+选用 -Port 18061 时打开 http://127.0.0.1:18061/，以启动窗口实际显示的地址为准。
+
+完整教程：docs/下载后运行与配置.md
+数据清单：docs/数据与材料收集清单.md
+公开仓库：https://github.com/zjuhechao/shi-zai-ren-wei
+包内文件指纹：application_manifest.sha256.json（清单不哈希自身，避免循环依赖）。
+
+测试边界：打包核验检查文件完整性、指纹、解析、入口与无密钥离线逻辑；不把这些检查称作新的远程 API 调用或其他电脑的安装验收。

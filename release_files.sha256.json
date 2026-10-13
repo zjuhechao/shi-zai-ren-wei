@@ -1,13 +1,14 @@
 {
   "schema": "tracked-source-release-sha256-v2",
   "release_version": "0.6.1",
-  "release_date": "2026-10-13",
-  "tracked_file_count": 71,
-  "hashed_file_count": 70,
+  "release_date": "2026-10-14",
+  "materials_revision": "r3",
+  "tracked_file_count": 79,
+  "hashed_file_count": 78,
   "excluded_paths": [
     "release_files.sha256.json"
   ],
-  "exclusion_reason": "Manifest does not hash itself; Git HEAD and archive hashes are in the external release verification record to avoid circular references.",
+  "exclusion_reason": "Manifest does not hash itself; Git HEAD and archive hashes remain in an external verification record to avoid circular references.",
   "files": [
     {
       "path": ".dockerignore",
@@ -16,13 +17,13 @@
     },
     {
       "path": ".gitignore",
-      "bytes": 165,
-      "sha256": "7e8b044d95f7bb1ac3e08e596ebbc8b713478b649310cf5fdd7c0972f46ba097"
+      "bytes": 199,
+      "sha256": "c8172513ab1bcab5655521ff897810a79435ac2858f09d2c5cefedf4d679d07f"
     },
     {
       "path": "README.md",
-      "bytes": 12215,
-      "sha256": "959ae843af98b3d1cf06184e76d0211e89e78d2404b90958d56d1c8a98d02e1b"
+      "bytes": 13898,
+      "sha256": "6fc8a2bd51420d2d1c8255c888deb5e59e40b76a717bf8acd2b41fd965d7a107"
     },
     {
       "path": "app.js",
@@ -41,8 +42,8 @@
     },
     {
       "path": "backend/README.md",
-      "bytes": 4803,
-      "sha256": "f745f350d8f75f9da2c68699e6e934c5a43c1c7a65aa80145a1a2ec3186f6995"
+      "bytes": 5208,
+      "sha256": "2f614613bde259cb60e78f14fd781e18d9f7a3366c21b528b7eff2c3ca4dd2e5"
     },
     {
       "path": "backend/app/__init__.py",
@@ -291,23 +292,23 @@
     },
     {
       "path": "docs/API与平台操作清单.md",
-      "bytes": 4180,
-      "sha256": "03b55e4e8d28d8ff7908f65552be20fceef5f0f307b27d08b3c506fd95ded46a"
+      "bytes": 4557,
+      "sha256": "9b1a65272d94fb9271ee874d06d16729d7aa630404d65162240630cd7a0bb084"
     },
     {
       "path": "docs/下载后运行与配置.md",
-      "bytes": 19425,
-      "sha256": "7a64ec980ea72331851cea12a36dd1b02d15a880e6db92d023a31159bea08e6e"
+      "bytes": 19949,
+      "sha256": "fbaaaacdd00ddfba9d2f87b16b135bd80beca6ff4836f2690df104818595573f"
     },
     {
       "path": "docs/技术架构_v0.6.1.svg",
-      "bytes": 6690,
-      "sha256": "86336221ff65f10cbaca7465595bdca3271322ea17c74cc2b12c05c9c929ab67"
+      "bytes": 6804,
+      "sha256": "39e3f7df0f6dd9d716e0e335af9f12e225e3fa778f6f3387fcc3e6446807c327"
     },
     {
       "path": "docs/技术说明_v0.6.1.pdf",
-      "bytes": 245823,
-      "sha256": "a55ecddcbc041e318ae44f2c6d6fd4b7cb19720ca72e425260c08c708054a063"
+      "bytes": 246503,
+      "sha256": "baf208b6c608695ae4fbe8783d40de51d69bbf5c2a7e681f8c8b79b27776f76f"
     },
     {
       "path": "docs/数据与材料收集清单.md",
@@ -320,6 +321,16 @@
       "sha256": "6aa428c800c5855b03bca45b5a917a827c1b4591e242b5c460fb84b5361138ee"
     },
     {
+      "path": "downloads/README.md",
+      "bytes": 2094,
+      "sha256": "455cba6c24c0a321bc5159a07bdee3ed764fae3e16d0fdd7e27cbe5df4e735e8"
+    },
+    {
+      "path": "downloads/app-windows-v0.6.1.zip",
+      "bytes": 1731794,
+      "sha256": "617b792897313c5c80c4b1640ac3d7e7c1f8c66582c9d1453fc6262933b047ee"
+    },
+    {
       "path": "index.html",
       "bytes": 26317,
       "sha256": "eadb3ee4b48bcd5720e5a4fb89a2fe0899deda4be63e0c45b49bc96198b4aed6"
@@ -328,6 +339,36 @@
       "path": "styles.css",
       "bytes": 19468,
       "sha256": "6fbfe5bbb0428b9202947d44a237c286a9cbc5191443b0fa82996e8e2e0e5098"
+    },
+    {
+      "path": "tools/build_application.py",
+      "bytes": 10035,
+      "sha256": "955e40c9c34a65a52e6f50c934dfc5d8e6a43757c01a57882c76afb3b9c571ee"
+    },
+    {
+      "path": "tools/templates/start-app.bat",
+      "bytes": 306,
+      "sha256": "f31d2f4d5e1de314ecb19b1cbe639cc8733a05696a8e3cd9cbb5d7a6d2954954"
+    },
+    {
+      "path": "tools/templates/start-app.ps1",
+      "bytes": 673,
+      "sha256": "404cd14bc639435aa0ff406f5477496ec865f61f280436caa8b3ee36ff1dda4e"
+    },
+    {
+      "path": "tools/templates/开始使用.html",
+      "bytes": 6371,
+      "sha256": "2741a4c7a5d5885447e0e855acd0294e1cc7aa22ca4dd8dcc3eab55952cd98f6"
+    },
+    {
+      "path": "tools/templates/开始使用.txt",
+      "bytes": 4044,
+      "sha256": "4d70786b01b4b5b26af27fc88636ab6de0626716d912705495ab08f95d4bdc08"
+    },
+    {
+      "path": "tools/update_source_manifest.py",
+      "bytes": 2885,
+      "sha256": "55daaf6c51a111dd1ef63f318539ca2f46ffc4df7e7e3353dfd21a6182cfe5f0"
     },
     {
       "path": "启动演示.bat",

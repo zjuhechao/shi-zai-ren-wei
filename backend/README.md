@@ -2,13 +2,15 @@
 
 后端由三条相互独立的链路组成：
 
-1. DeepSeek `deepseek-flash` 负责多模态识别和智能体工具编排；
-2. 阿里云百炼 `text-embedding-v4` 或其他 OpenAI 兼容嵌入服务负责文本向量化，本地 Chroma 存储和检索；
+1. DeepSeek `deepseek-flash` 负责定性草案和智能体工具编排；图片入口需独立授权、账号能力确认与效果验收；
+2. 当前流程使用阿里云百炼 `text-embedding-v4` 向量化，本地 Chroma 存储和检索。其他兼容服务需要手动配置并另行验证，不是自动降级路线；
 3. Python 确定性函数负责投资、节省额、减碳量和静态回收期。
 
 这种拆分避免用大模型直接生成工程数值，也避免把没有向量模型的关键词匹配冒充语义RAG。
 
 ## 安装与启动
+
+软件API v0.6.1，资料分发r3。公开仓库：https://github.com/zjuhechao/shi-zai-ren-wei 。普通使用者也可下载仓库downloads/app-windows-v0.6.1.zip，完整解压后用start-app.bat；该源码型应用仍需Python及首装依赖网络，不是EXE或公网托管服务。
 
 在项目根目录打开 PowerShell：
 

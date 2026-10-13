@@ -1,5 +1,7 @@
 # API与平台操作清单 v0.6.1
 
+本次资料与应用分发为r3（2026-10-14）。公开仓库 https://github.com/zjuhechao/shi-zai-ren-wei 提供源码与downloads/app-windows-v0.6.1.zip；应用是需Python的本地网页应用，不是公网后端。优先使用configure-keys.bat隐藏输入本人Key，完整教学见下载后运行与配置.md。
+
 ## 一、先处理已经暴露的密钥
 
 聊天中出现过的 DeepSeek 密钥应立即在 DeepSeek 开放平台后台删除或停用，并重新创建一枚新密钥。新密钥只写入本机 `backend/.env`，不要发到聊天、微信、邮件、截图、演示视频或源码压缩包中。
@@ -70,7 +72,7 @@ v0.6.1配置完成后，先执行 `backend/scripts/ingest_knowledge.py --audit-o
 .\.venv\Scripts\python.exe backend\scripts\ingest_knowledge.py --reviewed --document-id DOC-FAC-0001
 ```
 
-入库完成后启动程序，页面顶部应显示“文本向量服务已配置”和“本地Chroma RAG已建立”。若入库报告显示跳过文件，应按原因修复路径、OCR文本或清单字段，不得把跳过的文件计入知识库。
+入库完成后彻底停止并重新启动自己的程序，检查真实rag_chunks。仅显示“已配置”不能证明Key有效或服务联通。若入库报告跳过文件，按原因修复路径、正文或清单，不把跳过或计划片段计入知识库。
 
 ## 五、未实现的其他向量路线
 
@@ -83,4 +85,4 @@ v0.6.1配置完成后，先执行 `backend/scripts/ingest_knowledge.py --audit-o
 - 先用一条政策问题检查RAG返回文档标题和链接；
 - 先用一张完成授权和脱敏的照片检查多模态结果；
 - 计算结果与手算样例一致；
-- 断网时切换离线校验演示，不把离线结果称作API或RAG结果。
+- 无Key或断网时可本地测算并下载固定16页青禾假设PDF；不把它冒充新输入的API/RAG生成结果。

@@ -1,0 +1,24 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>室在人为 · 开始使用</title>
+<style>
+:root{color-scheme:light;--ink:#16322c;--muted:#526a63;--green:#08795f;--line:#d8e5df}*{box-sizing:border-box}body{margin:0;background:#f3f7f5;color:var(--ink);font:16px/1.7 "Microsoft YaHei","PingFang SC",sans-serif}main{max-width:1080px;margin:36px auto;padding:0 24px 40px}header{background:#123e33;color:#fff;padding:32px;border-radius:20px}h1{margin:8px 0;font-size:34px;line-height:1.35}.tag{font-size:13px;color:#bce7d4;letter-spacing:.12em}header p{margin:12px 0 0;max-width:800px}section{background:#fff;border:1px solid var(--line);border-radius:16px;padding:24px;margin-top:20px}h2{font-size:22px;margin:0 0 12px}h3{font-size:17px;margin:0 0 8px}p{margin:10px 0}.grid{display:grid;grid-template-columns:1fr 1fr;gap:20px}.note{border-left:5px solid #b37619;background:#fff9ed}ol,ul{padding-left:1.5em}li{margin:8px 0}code,pre{font-family:Consolas,monospace;background:#edf3ef}code{padding:2px 5px;border-radius:4px}pre{padding:16px;overflow:auto;font-size:13px;line-height:1.7;border-radius:8px}a{color:var(--green);overflow-wrap:anywhere}footer{color:var(--muted);font-size:13px;margin-top:20px}.small{font-size:14px;color:var(--muted)}@media(max-width:700px){.grid{grid-template-columns:1fr}main{margin:18px auto;padding:0 14px 24px}header,section{padding:20px}h1{font-size:28px}}@media print{body{background:white}main{max-width:none;margin:0;padding:0}header{background:white;color:#16322c;border:1px solid #16322c}.tag{color:#526a63}section{break-inside:avoid}a{color:#16322c}}
+</style>
+</head>
+<body><main>
+<header><div class="tag">SHI ZAI REN WEI · WINDOWS LOCAL APPLICATION</div><h1>把完整方案带到你的电脑</h1><p>应用分发整理版 r3 · 2026-10-14；软件 API 版本保持 v0.6.1。先体验 Python 测算与固定假设方案，再按需配置自己的 API，建立真实 RAG 并生成新 PDF。</p></header>
+<section class="note"><h2>先明确你下载的是什么</h2><p>这是<strong>源码型本地应用包</strong>，需要 Windows 64 位 Python 3.12，首次联网安装依赖；不是免安装 EXE，不是已经部署的公网服务。没有团队密钥、原机向量库、私人账单或签章。默认只监听本机。</p></section>
+<div class="grid">
+<section><h2>01 · 不花 API 费用，先看产品</h2><ol><li>右键 ZIP → <strong>全部解压</strong>，放入自己的可写目录。不要在 ZIP 预览中启动。</li><li>准备 Python 3.12（64 位）。安装方法见完整教程。</li><li>双击 <code>start-app.bat</code>，首次等待依赖安装。</li><li>保持启动窗口打开，看到 <code>Open http://… in your browser</code> 后打开该地址。默认 <code>http://127.0.0.1:8000/</code>。</li><li>载入“假设情景演示”并计算，查看比选、敏感性分析及 Python 结果。</li><li>点击“下载青禾示范方案 PDF”。它是固定假设案例，不随输入改变。</li></ol><p class="small">不要直接双击 index.html；file:// 页面不表示后端已启动。依赖安装失败时也不表示应用已启动。</p></section>
+<section><h2>02 · 配自己的账号，生成新方案</h2><ol><li>双击 <code>configure-keys.bat</code>，填写自己的 DeepSeek、百炼 Key 和对应空间 Base URL。</li><li>Key 只保存到本机 <code>backend/.env</code>。不要分享、截图或提交到 Git。</li><li>完全停止自己启动的旧服务，再重启；仅刷新网页不够。</li><li>按完整教程做连接检查及离线资料预检。</li><li>确认授权和费用后，显式选取三份公开资料真实入库；入库后重启。</li><li>核对真实 <code>rag_chunks &gt; 0</code>，完成计算输入后生成新 PDF。</li></ol><p class="small">百炼使用自己的 <code>https://…/compatible-mode/v1</code>，不是 /api/v1 或 /embeddings。Chroma 随依赖安装，不需要额外云数据库或 GPU。</p></section>
+</div>
+<section><h2>遇到启动问题</h2><p>在应用根目录的地址栏输入 powershell 后回车，可按需要执行以下命令。Python 路径须换成自己电脑上的真实路径。</p><pre>powershell -NoProfile -ExecutionPolicy Bypass -File .\start-app.ps1 -Port 18061
+powershell -NoProfile -ExecutionPolicy Bypass -File .\start-app.ps1 -PythonPath "C:\你的Python目录\python.exe" -Port 18061
+powershell -NoProfile -ExecutionPolicy Bypass -File .\start-app.ps1 -IndexUrl https://mirrors.zju.edu.cn/pypi/web/simple -Port 18061</pre><p>选择 <code>-Port 18061</code> 时打开 <code>http://127.0.0.1:18061/</code>，以窗口实际显示为准。端口占用时选其他空闲端口，不要停止其他项目服务；镜像参数仅本次有效，不更改全局 pip 设置。</p></section>
+<section><h2>体验与工程结论之间的边界</h2><ul><li>无 Key、无向量库时，新智能方案和 RAG 不会假装成功；本地测算与固定示范 PDF 仍能使用。</li><li>青禾是假设案例，不能视作望月公寓真实收益。真实项目需补齐账单、报价、工程量、节能依据与授权。</li><li>三份公开资料只是小型流程演示库，不是充分的住宅改造依据，也不包含固定青禾示范 PDF 历史引用的全部标准。新结果不保证与固定 PDF 相同。</li><li>其他电脑不能访问你的 127.0.0.1 地址，应各自下载运行。公网部署另需鉴权、HTTPS、配额与数据保护。</li><li>本包不含开发测试和 Docker 文件；开发和二次修改请下载完整源码。</li></ul></section>
+<section><h2>继续阅读</h2><p><a href="开始使用.txt">纯文字快速指南</a> · <a href="docs/下载后运行与配置.md">完整下载与配置教程</a> · <a href="docs/数据与材料收集清单.md">数据与材料清单</a> · <a href="https://github.com/zjuhechao/shi-zai-ren-wei">公开 GitHub 源码</a></p><p class="small">Markdown 文件可用文本编辑器查看。文件指纹在 application_manifest.sha256.json；清单不哈希自身，避免循环引用。</p></section>
+<footer>打包核验检查文件完整性、指纹、解析、入口与无密钥离线逻辑；不把这些检查称为新的付费 API 测试或另一台电脑安装验收。方案仍须专业复核。</footer>
+</main></body></html>
