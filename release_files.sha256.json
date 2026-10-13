@@ -2,8 +2,8 @@
   "schema": "tracked-source-release-sha256-v2",
   "release_version": "0.6.1",
   "release_date": "2026-10-13",
-  "tracked_file_count": 68,
-  "hashed_file_count": 67,
+  "tracked_file_count": 71,
+  "hashed_file_count": 70,
   "excluded_paths": [
     "release_files.sha256.json"
   ],
@@ -21,8 +21,8 @@
     },
     {
       "path": "README.md",
-      "bytes": 9679,
-      "sha256": "8462e020894465329a47bbcb0e0515356a7d8a7bb7398cab0d7fbf536684bcac"
+      "bytes": 11686,
+      "sha256": "32fa24ad0e7991e269edaa8c5c87aa96587208a27196d26f611edaf7f4d54743"
     },
     {
       "path": "app.js",
@@ -36,8 +36,8 @@
     },
     {
       "path": "backend/.env.example",
-      "bytes": 1066,
-      "sha256": "d33090457386fc27c540a9fe1e4f36da8447da6f43ba7baa7a3838674b390fbc"
+      "bytes": 1075,
+      "sha256": "8c920b1341369d7c12f37d1bb32babf8aa6cac8342f33be3323ddbd5fabe185d"
     },
     {
       "path": "backend/README.md",
@@ -141,8 +141,8 @@
     },
     {
       "path": "backend/scripts/configure_secrets.py",
-      "bytes": 3565,
-      "sha256": "974ac1a1df3ad4da684b2e8b372951e257febcc43e5f30337dc395a5069065bd"
+      "bytes": 8548,
+      "sha256": "90fe03afa782d8dfbeddb421fad502b2c637b6fd6c85eac9f22162f095d214d4"
     },
     {
       "path": "backend/scripts/ingest_knowledge.py",
@@ -158,6 +158,11 @@
       "path": "backend/scripts/verify_customer_demo.py",
       "bytes": 3648,
       "sha256": "0d2ee8983f21a9f2b0f9739651deef1bba076fe3e760f1b2aa3893c9c1b9b6b0"
+    },
+    {
+      "path": "backend/tests/configuration_checks.py",
+      "bytes": 10087,
+      "sha256": "06f2557158046e0dbe06b754120971a1ec5998f435ec4769ebda7daa89cb5bdf"
     },
     {
       "path": "backend/tests/test_calculators.py",
@@ -201,8 +206,13 @@
     },
     {
       "path": "configure-keys.bat",
-      "bytes": 190,
-      "sha256": "857cc597c03fca612b65daf6b9a01fd4f3fe6e09985f4a33bc2e7dd8797a725d"
+      "bytes": 207,
+      "sha256": "da58e3e4f06dd897ab0137138420b08fcc54087b7a5a04cddc65bf7304a6e009"
+    },
+    {
+      "path": "configure-keys.ps1",
+      "bytes": 2537,
+      "sha256": "ca510264b2e0c612cf4e48d7ebc605313147bfd0273715b5735a5f387874c0b5"
     },
     {
       "path": "data/cases/assumption_demo.json",
@@ -283,6 +293,11 @@
       "path": "docs/API与平台操作清单.md",
       "bytes": 4180,
       "sha256": "03b55e4e8d28d8ff7908f65552be20fceef5f0f307b27d08b3c506fd95ded46a"
+    },
+    {
+      "path": "docs/下载后运行与配置.md",
+      "bytes": 19295,
+      "sha256": "4e586e76ebbab17ad84e404f4dd9b0e22ed10d601af75b95ff266ebbdd1c699a"
     },
     {
       "path": "docs/技术架构_v0.6.1.svg",
