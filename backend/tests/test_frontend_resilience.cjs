@@ -275,11 +275,11 @@ function fillBase() {
   await context.checkBackend();
   equal(state().ragReady, false, "ready flag alone cannot claim a nonempty RAG");
   ok(element("photo-readiness").textContent.includes("是否支持图像"), "vision configuration does not claim successful image analysis");
-  const catalog = deferred(); let catalogCalls = 0;
-  context.apiRequest = async () => { catalogCalls++; return catalog.promise; };
+  const catalog = deferred(); let catalogCalls = 0; let catalogTimeout;
+  context.apiRequest = async (_endpoint, _options, timeoutMs) => { catalogCalls++; catalogTimeout = timeoutMs; return catalog.promise; };
   const pendingCatalog = context.loadKnowledgeCatalog();
   await context.loadKnowledgeCatalog();
-  equal(catalogCalls, 1, "catalog refresh reentry blocked");
+  equal(`${catalogCalls}:${catalogTimeout}`, "1:60000", "catalog refresh reentry blocked and local audit receives a 60-second timeout");
   catalog.reject(new Error("local service unavailable"));
   await pendingCatalog;
   equal(state().catalog, null, "failed refresh discards previous catalog state");

@@ -32,8 +32,8 @@
     },
     {
       "path": "app.js",
-      "bytes": 62377,
-      "sha256": "60466a0b2e24e11b926ac5f41a24289bbf589db8e8288a4dab9e6ca44b61f93c"
+      "bytes": 62796,
+      "sha256": "8a9b28315100d7540e4b0fc0e39af0cd0f12b8b256eeb47cd1c0128fa2e839fa"
     },
     {
       "path": "assets/reports/qinghe_plan_demo.pdf",
@@ -212,8 +212,8 @@
     },
     {
       "path": "backend/tests/test_frontend_resilience.cjs",
-      "bytes": 21076,
-      "sha256": "72f683ecaee7d89a31e4135d2230a4f4b6dab30ca54026048a23dee5a63d5d16"
+      "bytes": 21230,
+      "sha256": "7c667f9f5e465db1b4ebc1645c1c29304dfbef6a26c36e5468a61bc1f665d8cd"
     },
     {
       "path": "backend/tests/test_plan_report.py",
@@ -362,13 +362,13 @@
     },
     {
       "path": "downloads/app-windows-v0.6.2.zip",
-      "bytes": 1750865,
-      "sha256": "6e0971581ba255ec4fa5208186b8f169875abf0bace7743f0a99934ac146576a"
+      "bytes": 1750995,
+      "sha256": "afbaf4b412a9892f99cd4de2ce9943979a440f78521761266af070c006090c34"
     },
     {
       "path": "index.html",
-      "bytes": 27367,
-      "sha256": "c6145c2fbddaad68b0875591b19e3b9b9bdb47176c2e4d7add6dd68605d25d6a"
+      "bytes": 27373,
+      "sha256": "16dad9545f80a9d9bd8da629c839172528ce341e83c83479549fda53aca372b0"
     },
     {
       "path": "styles.css",

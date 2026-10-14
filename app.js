@@ -1039,8 +1039,9 @@ async function askAgent() {
 async function loadKnowledgeCatalog() {
   if (state.catalogBusy) return;
   state.catalogBusy = true;
+  $("library-metrics").textContent = "正在本地核对资料目录。归档较多时可能需要几十秒，不调用模型，也不产生 API 费用。";
   try {
-    state.catalog = await apiRequest("/api/knowledge/catalog", {}, 8000);
+    state.catalog = await apiRequest("/api/knowledge/catalog", {}, 60000);
     const c = state.catalog;
     $("hero-docs").textContent = c.indexed_documents;
     $("hero-chunks").textContent = c.indexed_chunks;
@@ -1049,13 +1050,14 @@ async function loadKnowledgeCatalog() {
     $("knowledge-notice").textContent = c.notice + " 私人照片、账单、签章和密钥未批量上传。";
     renderKnowledgeCatalog();
   } catch (error) {
+    const notice = /超时/.test(error.message) ? "本地目录审核超时，资料较多时可能需要几十秒。请稍候手动点击重新检测；目录审核不调用模型，也不产生 API 费用。" : error.message;
     state.catalog = null;
     $("hero-docs").textContent = "—";
     $("hero-chunks").textContent = "—";
     $("knowledge-list").textContent = "资料状态读取失败；未继续展示上次的入库状态。";
     $("knowledge-count").textContent = "当前状态未知，请重新检测。";
-    $("library-metrics").textContent = `资料状态读取失败：${error.message}`;
-    $("hero-readiness").textContent = "资料状态暂不可用，请检查本地服务。";
+    $("library-metrics").textContent = `资料状态读取失败：${notice}`;
+    $("hero-readiness").textContent = /超时/.test(error.message) ? notice : "资料状态暂不可用，请检查本地服务。";
   } finally {
     state.catalogBusy = false;
   }
