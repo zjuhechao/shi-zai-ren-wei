@@ -9,16 +9,17 @@ const elements = new Map();
 const element = id => {
   if (!elements.has(id)) elements.set(id, {value:"", checked:false, hidden:true,
     disabled:false, textContent:"", innerHTML:"", className:"", dataset:{},
-    addEventListener(){}, scrollIntoView(){}, focus(){}});
+    addEventListener(){}, scrollIntoView(){}, focus(){}, reset(){for(const item of elements.values()){item.value="";item.checked=false;}}, setAttribute(){}});
   return elements.get(id);
 };
 const context = vm.createContext({
   console, document:{getElementById:element, querySelectorAll:()=>[]},
   ClientUI:require(path.join(root,"client-ui.js")), URL, Blob,
   fetch:async()=>{throw new Error("Offline test; no network request is made");},
-  window:{}, setTimeout,
+  window:{}, setTimeout, clearTimeout, AbortController,
 });
 vm.runInContext(fs.readFileSync(path.join(root,"app.js"),"utf8"),context);
+vm.runInContext("confirmAction = async () => true", context);
 
 (async()=>{
   await new Promise(resolve=>setImmediate(resolve));

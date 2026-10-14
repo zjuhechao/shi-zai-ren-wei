@@ -6,6 +6,7 @@ import hashlib
 import json
 import re
 import subprocess
+from datetime import date as calendar_date
 from pathlib import Path, PurePosixPath
 
 MANIFEST = "release_files.sha256.json"
@@ -16,6 +17,7 @@ def refresh(source: Path, date: str, revision: str) -> dict:
     source = source.resolve(strict=True)
     if not re.fullmatch(r"\d{4}-\d{2}-\d{2}", date) or not re.fullmatch(r"r\d+", revision):
         raise ValueError("Use ISO date and r-number revision")
+    calendar_date.fromisoformat(date)
     result = subprocess.run(["git", "-C", str(source), "ls-files", "-z"], check=True, stdout=subprocess.PIPE)
     names = sorted(part.decode("utf-8") for part in result.stdout.split(b"\0") if part)
     if MANIFEST not in names:
@@ -25,9 +27,9 @@ def refresh(source: Path, date: str, revision: str) -> dict:
         relative = PurePosixPath(name)
         if relative.is_absolute() or ".." in relative.parts or "\\" in name or ":" in name:
             raise ValueError("Unsafe tracked path")
-        if BLOCKED.intersection(relative.parts) or relative.name == ".env":
+        if BLOCKED.intersection(part.casefold() for part in relative.parts) or relative.name.casefold() == ".env":
             raise ValueError("Private/runtime file tracked: " + name)
-        if relative.suffix.lower() == ".zip" and name != "downloads/app-windows-v0.6.1.zip":
+        if relative.suffix.lower() == ".zip" and name != "downloads/app-windows-v0.6.2.zip":
             raise ValueError("Only the approved application ZIP may be tracked")
         if name == MANIFEST:
             continue
@@ -37,7 +39,7 @@ def refresh(source: Path, date: str, revision: str) -> dict:
         content = path.read_bytes()
         records.append({"path": name, "bytes": len(content), "sha256": hashlib.sha256(content).hexdigest()})
     payload = {
-        "schema": "tracked-source-release-sha256-v2", "release_version": "0.6.1",
+        "schema": "tracked-source-release-sha256-v2", "release_version": "0.6.2",
         "release_date": date, "materials_revision": revision,
         "tracked_file_count": len(names), "hashed_file_count": len(records),
         "excluded_paths": [MANIFEST],

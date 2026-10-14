@@ -30,17 +30,29 @@ def update_env_text(original: str, updates: dict[str, str]) -> str:
 
 
 def read_env_values(text: str) -> dict[str, str]:
-    """Read our generated quoted values and simple example values without dotenv."""
+    """Read ordinary dotenv values without installing or executing dotenv.
+
+    Accept quoted values followed by comments, but never interpolate variables
+    or execute anything from the file. Malformed lines remain untouched.
+    """
     values = {}
     for line in text.splitlines():
         match = re.match(r"^\s*(?:export\s+)?([A-Z_]+)\s*=\s*(.*?)\s*$", line)
         if not match:
             continue
         name, value = match.groups()
-        if value.startswith("'") and value.endswith("'"):
-            value = re.sub(r"\\(['\\])", r"\1", value[1:-1])
-        elif value.startswith('"') and value.endswith('"'):
-            value = value[1:-1]
+        if value.startswith(("'", '"')):
+            quote = value[0]
+            match = re.match(r"^(['\"])((?:\\.|(?!\1).)*)\1\s*(?:#.*)?$", value)
+            if not match:
+                continue
+            value = match.group(2)
+            if quote == "'":
+                value = re.sub(r"\\(['\\])", r"\1", value)
+            else:
+                escapes = {"\\": "\\", "'": "'", '"': '"', "a": "\a", "b": "\b",
+                           "f": "\f", "n": "\n", "r": "\r", "t": "\t", "v": "\v"}
+                value = re.sub(r"\\([\\'\"abfnrtv])", lambda match: escapes[match.group(1)], value)
         else:
             value = re.split(r"\s+#", value, maxsplit=1)[0].strip()
         values[name] = value
@@ -88,6 +100,8 @@ def write_env_atomic(target: Path, text: str) -> None:
     try:
         with os.fdopen(descriptor, "w", encoding="utf-8", newline="\n") as handle:
             handle.write(text)
+            handle.flush()
+            os.fsync(handle.fileno())
         if os.name != "nt":
             temporary.chmod(0o600)
         os.replace(temporary, target)
@@ -102,6 +116,8 @@ def configure() -> None:
     if not sys.stdin.isatty():
         raise RuntimeError("Run this tool in your own interactive terminal. Never pipe keys into it.")
     target = BACKEND / ".env"
+    if target.is_symlink():
+        raise RuntimeError("Refusing redirected configuration. backend/.env must be a normal local file.")
     example = (BACKEND / ".env.example").read_text(encoding="utf-8-sig")
     original = target.read_text(encoding="utf-8-sig") if target.exists() else example
     existing = read_env_values(original)

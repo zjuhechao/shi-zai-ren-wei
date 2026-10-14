@@ -3,12 +3,14 @@ from __future__ import annotations
 import csv
 import hashlib
 import re
+import math
 from datetime import date
 from pathlib import Path
 from typing import Any, Iterable
 
 from .config import PROJECT_ROOT, Settings, require_embedding_settings
 from .document_loader import chunk_text, extract_text
+from .safety import reject_credentials, redact_error
 
 
 def _batches(items: list[str], size: int) -> Iterable[list[str]]:
@@ -122,7 +124,7 @@ class LocalKnowledgeBase:
             api_key=settings.embedding_api_key,
             base_url=settings.embedding_base_url,
             timeout=60,
-            max_retries=1,
+            max_retries=0,
         )
         self.client = chromadb.PersistentClient(path=str(settings.chroma_path))
         self.collection = self.client.get_or_create_collection(
@@ -143,13 +145,24 @@ class LocalKnowledgeBase:
         if self.settings.embedding_dimensions:
             kwargs["dimensions"] = self.settings.embedding_dimensions
         response = self.embedding_client.embeddings.create(**kwargs)
-        return [item.embedding for item in sorted(response.data, key=lambda item: item.index)]
+        if len(response.data) != len(texts):
+            raise ValueError("向量服务返回数量与输入不符，未写入此文档")
+        indices = [item.index for item in response.data]
+        if any(type(index) is not int for index in indices) or sorted(indices) != list(range(len(texts))):
+            raise ValueError("向量服务返回重复或无效索引，未写入此文档")
+        vectors = [list(item.embedding) for item in sorted(response.data, key=lambda item: item.index)]
+        dimension = self.settings.embedding_dimensions or (len(vectors[0]) if vectors else 0)
+        if any(len(vector) != dimension or not vector or not any(vector) or any(
+            isinstance(value, bool) or not isinstance(value, (int, float)) or not math.isfinite(value)
+            for value in vector) for vector in vectors):
+            raise ValueError("向量服务返回无效维度或非有限值，未写入此文档")
+        return vectors
 
     @staticmethod
     def _resolve_source(manifest_path: Path, value: str) -> Path:
         source_path = Path(value.replace("\\", "/"))
         if source_path.is_absolute():
-            return source_path
+            return source_path.resolve()
         candidates = [
             manifest_path.parent / source_path,
             manifest_path.parent.parent / source_path,
@@ -166,6 +179,9 @@ class LocalKnowledgeBase:
         missing_headers = sorted(required.difference(rows[0].keys() if rows else []))
         if missing_headers:
             raise ValueError(f"knowledge_manifest.csv缺少字段：{', '.join(missing_headers)}")
+        ids = [row.get("document_id", "") for row in rows]
+        if len(ids) != len(set(ids)):
+            raise ValueError("知识清单含重复document_id，未发送任何文档")
 
         if document_ids is not None:
             unknown = document_ids.difference(row["document_id"] for row in rows)
@@ -184,13 +200,18 @@ class LocalKnowledgeBase:
                 skipped.append({"row": str(row_number), "reason": f"字段为空：{', '.join(sorted(missing))}"})
                 continue
             source_path = self._resolve_source(manifest_path, row["local_file"])
-            if not source_path.exists():
+            if not source_path.is_file():
                 skipped.append({"row": str(row_number), "reason": f"文件不存在：{source_path}"})
                 continue
             try:
+                if source_path.stat().st_size > 50 * 1024 * 1024:
+                    raise ValueError("单份知识文件超过50MiB，请先拆分和核验")
                 chunks = chunk_text(extract_text(source_path))
+                if len(chunks) > 2000:
+                    raise ValueError("单份知识文件超过两千个片段，请拆分并分别核对")
+                reject_credentials(chunks)
             except Exception as exc:
-                skipped.append({"row": str(row_number), "reason": str(exc)})
+                skipped.append({"row": str(row_number), "reason": redact_error(exc)})
                 continue
             if not chunks:
                 skipped.append({"row": str(row_number), "reason": "文档未提取到可用文本"})
@@ -198,36 +219,48 @@ class LocalKnowledgeBase:
 
             version = (row.get("version") or row.get("effective_from") or "未标注版本").strip()
             checksum = hashlib.sha256(source_path.read_bytes()).hexdigest()
-            if skip_unchanged:
-                existing = self.collection.get(where={"document_id": row["document_id"]}, include=["metadatas"])
-                if len(existing["ids"]) == len(chunks) and all(m.get("checksum") == checksum and m.get("version") == version for m in existing["metadatas"]):
-                    unchanged_documents += 1
-                    continue
             base_metadata = {
                 "document_id": row["document_id"],
                 "title": row["title"],
                 "category": row["category"],
                 "region": row["region"],
-                "effective_from": row.get("effective_from", ""),
-                "effective_to": row.get("effective_to", ""),
-                "issuing_body": row.get("issuing_body", ""),
+                "effective_from": row.get("effective_from") or "",
+                "effective_to": row.get("effective_to") or "",
+                "issuing_body": row.get("issuing_body") or "",
                 "source_url": row["source_url"],
                 "local_file": str(source_path),
                 "version": version,
                 "acquisition_date": row["acquisition_date"],
                 "checksum": checksum,
             }
-            for batch_start, batch in enumerate(_batches(chunks, self.settings.embedding_batch_size)):
-                embeddings = self._embed(batch)
-                ids = []
-                metadatas = []
-                for offset, _ in enumerate(batch):
-                    chunk_index = batch_start * self.settings.embedding_batch_size + offset
-                    stable = f"{row['document_id']}:{version}:{chunk_index}"
-                    ids.append(hashlib.sha256(stable.encode("utf-8")).hexdigest())
-                    metadatas.append({**base_metadata, "chunk_index": chunk_index})
-                self.collection.upsert(ids=ids, embeddings=embeddings, documents=batch, metadatas=metadatas)
-                indexed_chunks += len(batch)
+            if skip_unchanged:
+                existing = self.collection.get(where={"document_id": row["document_id"]}, include=["metadatas", "documents"])
+                metadata = existing.get("metadatas") or []
+                documents = existing.get("documents") or []
+                indices = [m.get("chunk_index") for m in metadata]
+                unchanged = (len(existing["ids"]) == len(chunks) == len(metadata) == len(documents)
+                             and all(type(index) is int for index in indices)
+                             and sorted(indices) == list(range(len(chunks)))
+                             and all(document == chunks[m["chunk_index"]] and all(
+                                 m.get(key) == value for key, value in base_metadata.items())
+                                 for m, document in zip(metadata, documents)))
+                if unchanged:
+                    unchanged_documents += 1
+                    continue
+            # Paid embedding calls complete before any Chroma mutation for this document.
+            # This is not a claim of database transactions or rollback on storage failures.
+            vectors = []
+            for batch in _batches(chunks, self.settings.embedding_batch_size):
+                vectors.extend(self._embed(batch))
+            if len(vectors) != len(chunks) or len({len(vector) for vector in vectors}) != 1:
+                raise ValueError("此文档向量数量或维度不一致，未写入此文档")
+            ids, metadatas = [], []
+            for chunk_index, _ in enumerate(chunks):
+                stable = f"{row['document_id']}:{version}:{chunk_index}"
+                ids.append(hashlib.sha256(stable.encode("utf-8")).hexdigest())
+                metadatas.append({**base_metadata, "chunk_index": chunk_index})
+            self.collection.upsert(ids=ids, embeddings=vectors, documents=chunks, metadatas=metadatas)
+            indexed_chunks += len(chunks)
             # Remove obsolete chunks for this document only after successful re-indexing.
             current_ids = {
                 hashlib.sha256(f"{row['document_id']}:{version}:{index}".encode("utf-8")).hexdigest()
@@ -250,7 +283,7 @@ class LocalKnowledgeBase:
     def search(self, query: str, *, region: str | None = None, category: str | None = None, top_k: int = 6) -> list[dict[str, Any]]:
         if not query.strip():
             raise ValueError("检索问题不能为空")
-        if not isinstance(top_k, int) or not 1 <= top_k <= 10:
+        if type(top_k) is not int or not 1 <= top_k <= 10:
             raise ValueError("top_k必须为1至10的整数")
         if self.count() == 0:
             return []
@@ -279,6 +312,8 @@ class LocalKnowledgeBase:
         )
         candidates = []
         for document, metadata, distance in zip(result["documents"][0], result["metadatas"][0], result["distances"][0]):
+            if not isinstance(distance, (float, int)) or not math.isfinite(distance):
+                continue
             validity = _validity(metadata, checked_on)
             if validity == "outside_recorded_interval":
                 continue

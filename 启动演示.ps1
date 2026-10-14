@@ -73,7 +73,19 @@ if (-not [uri]::TryCreate($selectedIndex, [System.UriKind]::Absolute, [ref]$inde
 $installMarker = Join-Path $projectRoot ".venv\requirements.sha256"
 $requirementsHash = (Get-FileHash -LiteralPath $requirements -Algorithm SHA256).Hash
 $installedHash = if (Test-Path -LiteralPath $installMarker) { (Get-Content -LiteralPath $installMarker -Raw).Trim() } else { "" }
-if ($installedHash -ne $requirementsHash) {
+$dependencyCheck = Join-Path $projectRoot "backend\scripts\check_dependencies.py"
+if (-not (Test-Path -LiteralPath $dependencyCheck -PathType Leaf)) {
+    throw "The offline dependency checker is missing. Extract the complete application or repository."
+}
+$dependenciesReady = $false
+if ($installedHash -eq $requirementsHash) {
+    & $venvPython $dependencyCheck --requirements $requirements *> $null
+    $dependenciesReady = $LASTEXITCODE -eq 0
+    if (-not $dependenciesReady) {
+        Write-Host "The install marker exists, but dependencies are missing, changed or cannot be imported. Repairing them..." -ForegroundColor Yellow
+    }
+}
+if (-not $dependenciesReady) {
     Write-Host "Installing project dependencies. Internet access is required for the first run..." -ForegroundColor Cyan
     Write-Host ("Dependency file: " + (Split-Path -Leaf $requirements) + "; one-time index: " + $selectedIndex) -ForegroundColor DarkGray
     try {
@@ -81,6 +93,10 @@ if ($installedHash -ne $requirementsHash) {
         if ($LASTEXITCODE -ne 0) { throw "pip installation failed." }
     } catch {
         throw "Dependency installation failed. If PyPI is unreachable, retry with -IndexUrl https://mirrors.zju.edu.cn/pypi/web/simple. No persistent pip settings were changed."
+    }
+    & $venvPython $dependencyCheck --requirements $requirements *> $null
+    if ($LASTEXITCODE -ne 0) {
+        throw "Dependency validation failed after installation. No success marker was written. Check your Python version and the pinned requirements file."
     }
     Set-Content -LiteralPath $installMarker -Value $requirementsHash -Encoding ASCII
 }
@@ -93,7 +109,7 @@ if (-not (Test-Path -LiteralPath $envFile)) {
 
 if ($Port -gt 0) { $env:APP_PORT = [string]$Port }
 try {
-    $runtimeJson = & $venvPython -c "import json,sys; sys.path.insert(0,'backend'); from app.config import get_settings; s=get_settings(); print(json.dumps({'host':s.app_host,'port':s.app_port}))" 2>$null
+    $runtimeJson = & $venvPython -c "import json,sys; sys.path.insert(0,'backend'); from app.config import get_settings; s=get_settings(); print(json.dumps({'host':s.app_host,'port':s.app_port,'api_configured':s.api_configured,'embeddings_configured':s.embeddings_configured}))" 2>$null
     if ($LASTEXITCODE -ne 0) { throw "Invalid runtime settings." }
 } catch {
     throw "Unable to read runtime settings. Check backend/.env without sharing its private values."
@@ -102,6 +118,18 @@ $runtimeSettings = $runtimeJson | ConvertFrom-Json
 $runtimePort = [int]$runtimeSettings.port
 if ($runtimePort -lt 1 -or $runtimePort -gt 65535) { throw "APP_PORT must be between 1 and 65535." }
 if (-not $runtimeSettings.host) { throw "APP_HOST is empty. Set it to 127.0.0.1 for a local demo." }
+$hostAddress = $null
+if ($runtimeSettings.host -ne "localhost" -and
+    -not [System.Net.IPAddress]::TryParse([string]$runtimeSettings.host, [ref]$hostAddress)) {
+    throw "APP_HOST must be an IP address or localhost, not a URL. Use 127.0.0.1 for the local demo."
+}
+if ($runtimeSettings.host -ne "localhost" -and -not [System.Net.IPAddress]::IsLoopback($hostAddress)) {
+    throw "This Windows demo only starts on a loopback address. Set APP_HOST=127.0.0.1 or ::1. It has no public-service authentication."
+}
+Write-Host ("Configuration presence only: LLM=" + [bool]$runtimeSettings.api_configured + "; embedding=" + [bool]$runtimeSettings.embeddings_configured + ". This is not an online connectivity or RAG check.") -ForegroundColor DarkGray
+if (-not $runtimeSettings.api_configured -or -not $runtimeSettings.embeddings_configured) {
+    Write-Host "AI/RAG configuration is incomplete. Local calculations and the fixed demonstration PDF remain available." -ForegroundColor Yellow
+}
 $browserHost = if ($runtimeSettings.host -in @("0.0.0.0", "::", "localhost")) { "127.0.0.1" } else { [string]$runtimeSettings.host }
 $displayHost = if ($browserHost.Contains(":")) { "[" + $browserHost + "]" } else { $browserHost }
 $browserUrl = "http://" + $displayHost + ":" + $runtimePort

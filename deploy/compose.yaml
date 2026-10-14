@@ -7,6 +7,7 @@ services:
       - ../backend/.env
     environment:
       APP_HOST: 0.0.0.0
+      APP_ALLOW_CONTAINER_BIND: "true"
       APP_PORT: "8000"
       CHROMA_PATH: /app/storage/chroma
       KNOWLEDGE_MANIFEST: /app/数据收集包/08_已整理结构化数据/knowledge_manifest.csv

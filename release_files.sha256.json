@@ -1,10 +1,10 @@
 {
   "schema": "tracked-source-release-sha256-v2",
-  "release_version": "0.6.1",
+  "release_version": "0.6.2",
   "release_date": "2026-10-14",
-  "materials_revision": "r3",
-  "tracked_file_count": 79,
-  "hashed_file_count": 78,
+  "materials_revision": "r4",
+  "tracked_file_count": 86,
+  "hashed_file_count": 85,
   "excluded_paths": [
     "release_files.sha256.json"
   ],
@@ -18,17 +18,22 @@
     {
       "path": ".gitignore",
       "bytes": 199,
-      "sha256": "c8172513ab1bcab5655521ff897810a79435ac2858f09d2c5cefedf4d679d07f"
+      "sha256": "f70a1221fc8c16a10ff3847773cfd68bb16239c07637030d62ae5886dabd7ac5"
+    },
+    {
+      "path": "CHANGELOG.md",
+      "bytes": 2322,
+      "sha256": "f687c355a6a8d9753d4155ce684c934aa79691256eb4203031fae05b65cd6de8"
     },
     {
       "path": "README.md",
-      "bytes": 13898,
-      "sha256": "6fc8a2bd51420d2d1c8255c888deb5e59e40b76a717bf8acd2b41fd965d7a107"
+      "bytes": 16054,
+      "sha256": "6097f0f9a40322602a0fe55db8bf9d8af8a05e95448458b5f2cb0bbf2b43cf65"
     },
     {
       "path": "app.js",
-      "bytes": 49309,
-      "sha256": "d6628e006d5b0b49b793c14525beffeda2c415fb110974acb91d44a60f3b1339"
+      "bytes": 62377,
+      "sha256": "60466a0b2e24e11b926ac5f41a24289bbf589db8e8288a4dab9e6ca44b61f93c"
     },
     {
       "path": "assets/reports/qinghe_plan_demo.pdf",
@@ -42,8 +47,8 @@
     },
     {
       "path": "backend/README.md",
-      "bytes": 5208,
-      "sha256": "2f614613bde259cb60e78f14fd781e18d9f7a3366c21b528b7eff2c3ca4dd2e5"
+      "bytes": 5563,
+      "sha256": "0a25b6a0bfca0e4b0fae6202da7d915f124083d83e1d3ce0c9f701c93ee7fa2c"
     },
     {
       "path": "backend/app/__init__.py",
@@ -52,8 +57,8 @@
     },
     {
       "path": "backend/app/agent.py",
-      "bytes": 14018,
-      "sha256": "43492e3f40a3e3599d5f88dcd339409bedc6a42cabe255e142e97dba3b6d6219"
+      "bytes": 16585,
+      "sha256": "945a94d7f56492ea6e01c0ecb8be75f1e3599a316dc3b16096bdc66cef6af026"
     },
     {
       "path": "backend/app/calculators.py",
@@ -67,8 +72,8 @@
     },
     {
       "path": "backend/app/document_loader.py",
-      "bytes": 3778,
-      "sha256": "41f95a14c26ffe5464491a74a72afd46bfb1dad49ce8b9706a5e38f4ea2f61a0"
+      "bytes": 4086,
+      "sha256": "3b87d3230743087949ca92e9e4a70e94851ee6dfbf7a7ed7bde4f70096e4abb6"
     },
     {
       "path": "backend/app/knowledge_audit.py",
@@ -77,13 +82,13 @@
     },
     {
       "path": "backend/app/knowledge_catalog.py",
-      "bytes": 4175,
-      "sha256": "376f4098ace057ea763a034f9155c75bf706274c92be1897e6b9d19d670ba792"
+      "bytes": 4187,
+      "sha256": "291d2f44daffff7f2572ecc2897add1580817865ec797887a97bdfcde16275ee"
     },
     {
       "path": "backend/app/main.py",
-      "bytes": 11410,
-      "sha256": "fd03a114d249b818819dbd5a534acd86f9c139ae62fb6e6727955a99a5732625"
+      "bytes": 14565,
+      "sha256": "b009ddbadd4be54610a98c10d39b23bd777f81b47b217d5fcdbbe4994191b678"
     },
     {
       "path": "backend/app/plan_pdf.py",
@@ -92,23 +97,33 @@
     },
     {
       "path": "backend/app/plan_schemas.py",
-      "bytes": 5354,
-      "sha256": "fe0439827fe584462093a25779910b350b26adc5f2da454c62c3d5fdcc2f8c39"
+      "bytes": 5677,
+      "sha256": "36bbe19e9a7d932933ec40808bd4b54ef4bb4b040d645124717d6d62b04b0489"
     },
     {
       "path": "backend/app/plan_service.py",
-      "bytes": 9697,
-      "sha256": "d409279de2b0f1bb2d8ba96e3bdf4cb439254382ea17fdbde0f1082c39edc0ce"
+      "bytes": 9736,
+      "sha256": "d4d510c65c69b5fdb5c76e52ce360f5dd305a6b007c0d08dfbdbd899d74ace71"
+    },
+    {
+      "path": "backend/app/request_limits.py",
+      "bytes": 1839,
+      "sha256": "d0c77b6c060cd6912e2a57825739212265446ab0071f456257f85b4efcdc7d4f"
     },
     {
       "path": "backend/app/retrieval.py",
-      "bytes": 15220,
-      "sha256": "4d000190e1b85940c9d5a83c82901c721854b7bac64c7a720ec1ef2e75185e2d"
+      "bytes": 17641,
+      "sha256": "0d48db282f57159d4174b16c97959f5e5cfa1764207725ea0a2de53c5110b35b"
+    },
+    {
+      "path": "backend/app/safety.py",
+      "bytes": 4217,
+      "sha256": "e77a259e66311c2c49331f3b615df8a32ace23a056c76e3ae489331dcd1e3b89"
     },
     {
       "path": "backend/app/schemas.py",
-      "bytes": 1543,
-      "sha256": "8225d160e7caf337c65672a0eb66475916553669f908b01b71ec8e29a2e33b3b"
+      "bytes": 2330,
+      "sha256": "0b7316b6f5b44dc65ff28ff5b3a726cfc8334fa7df1881c3ce081aab310e09f1"
     },
     {
       "path": "backend/requirements-lock.windows-py312.txt",
@@ -122,13 +137,13 @@
     },
     {
       "path": "backend/requirements.txt",
-      "bytes": 331,
-      "sha256": "3cad9a831a3dcde09b0de19cc743fc7ed02a7a92fc8d9153bce89f56dccfa23f"
+      "bytes": 346,
+      "sha256": "63da78a88bb8984bcbbc28f38259013de9503ec73efbbc4339076eccc0b3461e"
     },
     {
       "path": "backend/run.py",
-      "bytes": 241,
-      "sha256": "f0905a80096c66e4ca4ec2adba6a8bd0ca304cb37a002a14c80b0e00f020def6"
+      "bytes": 1202,
+      "sha256": "387a31b46e5451f142c770ba4584aea3863ca8642cbf388c9ef70913fbcef8b8"
     },
     {
       "path": "backend/scripts/check_connectivity.py",
@@ -136,14 +151,19 @@
       "sha256": "f9f302987eb0ee62e1e375236aaa88e19e76ad0f30de559bcde01415722a0205"
     },
     {
+      "path": "backend/scripts/check_dependencies.py",
+      "bytes": 2577,
+      "sha256": "3f9676c503f52702a8cbb294210dc187549daf8cdbf6ce620c4071bb1d058960"
+    },
+    {
       "path": "backend/scripts/check_readiness.py",
-      "bytes": 6000,
-      "sha256": "5571df8c931623027213c8f914d85ca576a8d3e54bc685e41ffe63d6182b8531"
+      "bytes": 6763,
+      "sha256": "aba8c48590c7dc1cf7e57d6f7b0f73c110ef88bb1ecc4e5893def0c352dc7c22"
     },
     {
       "path": "backend/scripts/configure_secrets.py",
-      "bytes": 8548,
-      "sha256": "90fe03afa782d8dfbeddb421fad502b2c637b6fd6c85eac9f22162f095d214d4"
+      "bytes": 9294,
+      "sha256": "a03866c7e2f407a4bce0d3b96fb33f6eeaa10cb28c327235ee260d2206f1158d"
     },
     {
       "path": "backend/scripts/ingest_knowledge.py",
@@ -152,28 +172,28 @@
     },
     {
       "path": "backend/scripts/review_sources.py",
-      "bytes": 2321,
-      "sha256": "adab419d289b40b7055b948f7fc10790434e029332067fa5390f7e9f86c3e862"
+      "bytes": 3736,
+      "sha256": "018359b7c0278aab08e75e446f3bd895e5ff6835ca16221a4ad0b2ae32cec2c8"
     },
     {
       "path": "backend/scripts/verify_customer_demo.py",
-      "bytes": 3648,
-      "sha256": "0d2ee8983f21a9f2b0f9739651deef1bba076fe3e760f1b2aa3893c9c1b9b6b0"
+      "bytes": 4576,
+      "sha256": "9b6d97a442c0eb9b57440ab0839b3777bd488feb656c64a94a2f0d644bf94b64"
     },
     {
       "path": "backend/tests/configuration_checks.py",
-      "bytes": 10087,
-      "sha256": "06f2557158046e0dbe06b754120971a1ec5998f435ec4769ebda7daa89cb5bdf"
+      "bytes": 23844,
+      "sha256": "9e9d630e8225152eecbdfa1a7231eaf938127fb0f7dc657dfc1554376bfddfa4"
     },
     {
       "path": "backend/tests/test_calculators.py",
-      "bytes": 5651,
-      "sha256": "6a2115fea350d94d17928c70795f6f4c0bd37b3e57facd0227e6ed03d8cc0114"
+      "bytes": 5709,
+      "sha256": "b669c29100394c5521edb8730a4f5c162486b21c6313ec0fbfbf13fb584ef8d7"
     },
     {
       "path": "backend/tests/test_case_prefill.cjs",
-      "bytes": 2109,
-      "sha256": "31178f1c7c511d91531ab4ffe42f06831fa0b45476eb98666e2a0f52d832426a"
+      "bytes": 2302,
+      "sha256": "87bfd81cd555fda5ea9ef7677e75b8ae4945ac8465802d8815e887939147ef9a"
     },
     {
       "path": "backend/tests/test_client_ui.cjs",
@@ -182,28 +202,38 @@
     },
     {
       "path": "backend/tests/test_customer_demo.py",
-      "bytes": 5279,
-      "sha256": "b8d18f2e285598c9284f585b0631430a2ac32a01e8af3e494c7af108d4ad014e"
+      "bytes": 5366,
+      "sha256": "a00a790a28cd23976e5ae4cbfb703d1e9797045817a857481794a24d92a0da32"
     },
     {
       "path": "backend/tests/test_delivery_v04.py",
-      "bytes": 11254,
-      "sha256": "3b1afd7328bdadb51f6844b7c79800465d0080b5f01c80366b42b680159a2ea2"
+      "bytes": 11370,
+      "sha256": "8172028379a2ebdeaf5c08a6720434e29b9018bf836d1d6f0404dc8f399ed22d"
+    },
+    {
+      "path": "backend/tests/test_frontend_resilience.cjs",
+      "bytes": 21076,
+      "sha256": "72f683ecaee7d89a31e4135d2230a4f4b6dab30ca54026048a23dee5a63d5d16"
     },
     {
       "path": "backend/tests/test_plan_report.py",
-      "bytes": 10253,
-      "sha256": "19f111e87e55797c4409addb37d33b13301933bbd13594d6a53d2f862b61405a"
+      "bytes": 10427,
+      "sha256": "49cc678e529635d9ec285aac3623e011f4bcbfdc2f6b129c3732c612fe71df27"
     },
     {
       "path": "backend/tests/test_project_readiness.py",
-      "bytes": 5949,
-      "sha256": "a4535d3f095d99f427c874b209d48aec881a81b0a20376d1546d80332672f65b"
+      "bytes": 6088,
+      "sha256": "b033a05fd97d40211b7b6791e187904d102e2401d58db670fafc7b7d3dd0a593"
+    },
+    {
+      "path": "backend/tests/test_safety_v062.py",
+      "bytes": 21606,
+      "sha256": "6f4d515e66d338d5b857af776ac4cf423cd46243c3650d9fee38b3a9a9901495"
     },
     {
       "path": "client-ui.js",
-      "bytes": 8142,
-      "sha256": "ba9da85ab1cb9eee54c50681d3c5af0352bcdd53acf513236a98ae078252b5be"
+      "bytes": 9169,
+      "sha256": "809907c9c24e9f21dcc2a3eea131541f807b4997ca851978c3e97ddc59a58c45"
     },
     {
       "path": "configure-keys.bat",
@@ -277,38 +307,43 @@
     },
     {
       "path": "deploy/compose.yaml",
-      "bytes": 893,
-      "sha256": "89e26e9dc1ff9914c2c8cd6f7decde0aa4aa5ec47d8d33275e9bca873487a451"
+      "bytes": 932,
+      "sha256": "c73d5d792a9f0d1ade76248b2ca5241b3add54437d16929d085237c4f9edec2e"
     },
     {
       "path": "deploy/requirements.txt",
-      "bytes": 329,
-      "sha256": "39b6f5482186b007f4814502e267d51f6237579de0ea4b3e0c7ed99ebcd7fbc4"
+      "bytes": 344,
+      "sha256": "46f5079b8ec58be7f0d47b50845861ba34e7399f0d686805bc160779672e5960"
     },
     {
       "path": "deploy/部署与验收说明.txt",
-      "bytes": 5363,
-      "sha256": "c76ac1e7302c6a3a72208ebdd31277fad73ab64cde02c221884367ff6d737158"
+      "bytes": 6598,
+      "sha256": "8734e8e98ab4f0c6f8c0e9022d7f772f60ff4dadee70352898e4c9a650579dcf"
     },
     {
       "path": "docs/API与平台操作清单.md",
-      "bytes": 4557,
-      "sha256": "9b1a65272d94fb9271ee874d06d16729d7aa630404d65162240630cd7a0bb084"
+      "bytes": 7638,
+      "sha256": "2f520525f29dc08977672fd17808f4036bf7fe2481f90dd1d01d5f1851dfb3fc"
     },
     {
       "path": "docs/下载后运行与配置.md",
-      "bytes": 19949,
-      "sha256": "fbaaaacdd00ddfba9d2f87b16b135bd80beca6ff4836f2690df104818595573f"
+      "bytes": 21960,
+      "sha256": "026d25a8282347b53dbed4004f2a786172efa6b282348062e155e9d3dc2007e2"
     },
     {
-      "path": "docs/技术架构_v0.6.1.svg",
-      "bytes": 6804,
-      "sha256": "39e3f7df0f6dd9d716e0e335af9f12e225e3fa778f6f3387fcc3e6446807c327"
+      "path": "docs/完善与验收_v0.6.2.md",
+      "bytes": 4292,
+      "sha256": "ff3a1946fdd11e027e3789f5417e264c9d641370727d0695f6a106d3c6493180"
     },
     {
-      "path": "docs/技术说明_v0.6.1.pdf",
-      "bytes": 246503,
-      "sha256": "baf208b6c608695ae4fbe8783d40de51d69bbf5c2a7e681f8c8b79b27776f76f"
+      "path": "docs/技术架构_v0.6.2.svg",
+      "bytes": 6868,
+      "sha256": "d946129c201830592d674f1d13d8ab5ce8b7f1a2fd66fc672a342f6dbc1bc9a8"
+    },
+    {
+      "path": "docs/技术说明_v0.6.2.pdf",
+      "bytes": 249415,
+      "sha256": "dae69bbdf296c7753ead23a6a3c6c246a590a01312083962c35621ac193ff187"
     },
     {
       "path": "docs/数据与材料收集清单.md",
@@ -322,28 +357,28 @@
     },
     {
       "path": "downloads/README.md",
-      "bytes": 2094,
-      "sha256": "455cba6c24c0a321bc5159a07bdee3ed764fae3e16d0fdd7e27cbe5df4e735e8"
+      "bytes": 3161,
+      "sha256": "7dfaccc4352b4d532343e4ca5a99af3ce62241f65dec865d810586df85b25407"
     },
     {
-      "path": "downloads/app-windows-v0.6.1.zip",
-      "bytes": 1731794,
-      "sha256": "617b792897313c5c80c4b1640ac3d7e7c1f8c66582c9d1453fc6262933b047ee"
+      "path": "downloads/app-windows-v0.6.2.zip",
+      "bytes": 1750865,
+      "sha256": "6e0971581ba255ec4fa5208186b8f169875abf0bace7743f0a99934ac146576a"
     },
     {
       "path": "index.html",
-      "bytes": 26317,
-      "sha256": "eadb3ee4b48bcd5720e5a4fb89a2fe0899deda4be63e0c45b49bc96198b4aed6"
+      "bytes": 27367,
+      "sha256": "c6145c2fbddaad68b0875591b19e3b9b9bdb47176c2e4d7add6dd68605d25d6a"
     },
     {
       "path": "styles.css",
-      "bytes": 19468,
-      "sha256": "6fbfe5bbb0428b9202947d44a237c286a9cbc5191443b0fa82996e8e2e0e5098"
+      "bytes": 20742,
+      "sha256": "6fa6c7a754770f1d34611cf8db076c12b0e42c86fdf184a505c320d581850ee6"
     },
     {
       "path": "tools/build_application.py",
-      "bytes": 10035,
-      "sha256": "955e40c9c34a65a52e6f50c934dfc5d8e6a43757c01a57882c76afb3b9c571ee"
+      "bytes": 13110,
+      "sha256": "4b8dad0da4fb19503cf3dfe863c4fce448651fea5a48f2905d722c4a0aba9145"
     },
     {
       "path": "tools/templates/start-app.bat",
@@ -357,18 +392,18 @@
     },
     {
       "path": "tools/templates/开始使用.html",
-      "bytes": 6371,
-      "sha256": "2741a4c7a5d5885447e0e855acd0294e1cc7aa22ca4dd8dcc3eab55952cd98f6"
+      "bytes": 6453,
+      "sha256": "5e14e00677daf0555de9d63ee04f739cb3497a7d7997d010dcc77ddb36630894"
     },
     {
       "path": "tools/templates/开始使用.txt",
-      "bytes": 4044,
-      "sha256": "4d70786b01b4b5b26af27fc88636ab6de0626716d912705495ab08f95d4bdc08"
+      "bytes": 4311,
+      "sha256": "ce7b948efefa7144145a5da9be8bdc64416bf0bf8d5021611090c6565b6aeb23"
     },
     {
       "path": "tools/update_source_manifest.py",
-      "bytes": 2885,
-      "sha256": "55daaf6c51a111dd1ef63f318539ca2f46ffc4df7e7e3353dfd21a6182cfe5f0"
+      "bytes": 3005,
+      "sha256": "c0ebcfad2f767f98d8cbb8816262749e5c29157b9118f4d985ff8d1138c7bfca"
     },
     {
       "path": "启动演示.bat",
@@ -377,8 +412,8 @@
     },
     {
       "path": "启动演示.ps1",
-      "bytes": 7345,
-      "sha256": "dfe76aeb3efcc2f580122fcb65893272890332ba900160971f3ad7027501df53"
+      "bytes": 9304,
+      "sha256": "da97d64fd218158be92e0c3c840999f03e49036e18f54f8205e8395490da5915"
     },
     {
       "path": "数据收集包/02_能耗账单与电价/全国_生态环境部国家统计局_公告2024年第33号_电力二氧化碳排放因子公告全文_2022年数据_2024-12-26.html",

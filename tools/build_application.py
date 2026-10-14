@@ -15,9 +15,9 @@ from pathlib import Path, PurePosixPath
 from zipfile import ZIP_DEFLATED, ZipFile, ZipInfo
 
 
-VERSION = "0.6.1"
+VERSION = "0.6.2"
 FIXED_DATE = (2026, 10, 14, 0, 0, 0)
-TOP_LEVEL = "shi-zai-ren-wei-app-v0.6.1"
+TOP_LEVEL = "shi-zai-ren-wei-app-v" + VERSION
 MANIFEST_NAME = "application_manifest.sha256.json"
 
 ROOT_ALLOWLIST = {
@@ -26,9 +26,17 @@ ROOT_ALLOWLIST = {
     "启动演示.bat", "启动演示.ps1", "configure-keys.bat", "configure-keys.ps1",
     "backend/.env.example", "backend/run.py", "backend/requirements.txt",
     "backend/requirements-lock.windows-py312.txt",
+    "backend/app/__init__.py", "backend/app/main.py", "backend/app/config.py",
+    "backend/app/agent.py", "backend/app/calculators.py", "backend/app/schemas.py",
+    "backend/app/retrieval.py", "backend/app/document_loader.py", "backend/app/knowledge_audit.py",
+    "backend/app/knowledge_catalog.py", "backend/app/plan_service.py", "backend/app/plan_schemas.py",
+    "backend/app/plan_pdf.py", "backend/app/safety.py", "backend/app/request_limits.py",
+    "backend/scripts/check_dependencies.py", "backend/scripts/configure_secrets.py",
+    "data/cases/wangyue_case.json", "data/cases/assumption_demo.json", "data/knowledge/reviewed_documents.json",
+    "数据收集包/08_已整理结构化数据/knowledge_manifest.csv",
     "assets/reports/qinghe_plan_demo.pdf",
     "docs/API与平台操作清单.md", "docs/下载后运行与配置.md",
-    "docs/技术架构_v0.6.1.svg", "docs/技术说明_v0.6.1.pdf",
+    "docs/技术架构_v0.6.2.svg", "docs/技术说明_v0.6.2.pdf",
     "docs/数据与材料收集清单.md",
 }
 PREFIX_ALLOWLIST = (
@@ -46,10 +54,15 @@ def sha256(content: bytes) -> str:
 
 def safe_relative(name: str) -> PurePosixPath:
     path = PurePosixPath(name)
-    if path.is_absolute() or ".." in path.parts or "\\" in name or ":" in name:
+    if (not name or name != path.as_posix() or path.is_absolute() or ".." in path.parts
+            or "\\" in name or ":" in name or any(ord(char) < 32 for char in name)):
         raise ValueError("Unsafe relative path: " + name)
-    if BLOCKED_PARTS.intersection(path.parts) or path.name == ".env":
+    if BLOCKED_PARTS.intersection(part.casefold() for part in path.parts) or path.name.casefold() == ".env":
         raise ValueError("Forbidden runtime/private path: " + name)
+    for part in path.parts:
+        if (part.endswith((".", " ")) or any(char in part for char in '<>"|?*')
+                or re.fullmatch(r"(?:CON|PRN|AUX|NUL|COM[1-9]|LPT[1-9])(?:\..*)?", part, re.IGNORECASE)):
+            raise ValueError("Unsafe Windows path: " + name)
     return path
 
 
@@ -93,7 +106,11 @@ def build_application(source: Path, templates: Path, output: Path) -> dict:
         file_records.append({"path": name, "bytes": len(data), "sha256": sha256(data), "origin": "tracked_source"})
     for name in WRAPPERS:
         safe_relative(name)
-        data = (templates / name).read_bytes()
+        wrapper_path = templates / name
+        if (wrapper_path.is_symlink() or not wrapper_path.is_file()
+                or not wrapper_path.resolve().is_relative_to(templates)):
+            raise ValueError("Missing or symlinked wrapper: " + name)
+        data = wrapper_path.read_bytes()
         if KEY_PATTERN.search(data):
             raise ValueError("Credential-like wrapper content blocked")
         if name.endswith((".bat", ".ps1")) and not data.isascii():
@@ -102,12 +119,12 @@ def build_application(source: Path, templates: Path, output: Path) -> dict:
         file_records.append({"path": name, "bytes": len(data), "sha256": sha256(data), "origin": "application_wrapper"})
     env = contents["backend/.env.example"].decode("utf-8-sig")
     for key in ("LLM_API_KEY", "EMBEDDING_API_KEY"):
-        if not re.search(rf"^{key}=$", env, flags=re.MULTILINE):
+        if not re.search(rf"^{key}=[ \t]*\r?$", env, flags=re.MULTILINE):
             raise ValueError("Key template must be blank: " + key)
     manifest = {
         "schema": "source-type-windows-application-sha256-v1",
         "application_version": VERSION,
-        "package_revision": "r3",
+        "package_revision": "r4",
         "package_date": "2026-10-14",
         "platform": "Windows x64; Python 3.12 tested release route",
         "package_type": "source-type local application; Python runtime and dependencies not bundled",
@@ -127,6 +144,8 @@ def build_application(source: Path, templates: Path, output: Path) -> dict:
         "files": sorted(file_records, key=lambda record: record["path"]),
     }
     contents[MANIFEST_NAME] = (json.dumps(manifest, ensure_ascii=False, sort_keys=True, indent=2) + "\n").encode("utf-8")
+    if len({name.casefold() for name in contents}) != len(contents):
+        raise ValueError("Case-insensitive application path collision")
     output.parent.mkdir(parents=True, exist_ok=True)
     if output.exists():
         raise FileExistsError("Refusing to overwrite an existing application ZIP: " + str(output))
@@ -155,22 +174,41 @@ def audit_zip(path: Path) -> dict:
         if corrupt:
             raise ValueError("Corrupt ZIP entry: " + corrupt)
         names = archive.namelist()
-        if len(set(names)) != len(names):
-            raise ValueError("Duplicate ZIP entries")
+        if len({name.casefold() for name in names}) != len(names):
+            raise ValueError("Duplicate or case-insensitive ZIP entries")
         prefix = TOP_LEVEL + "/"
         for name in names:
             if not name.startswith(prefix):
                 raise ValueError("ZIP has unexpected root")
             safe_relative(name[len(prefix):])
+            if ((archive.getinfo(name).external_attr >> 16) & 0o170000) != 0o100000:
+                raise ValueError("ZIP entries must be regular files")
         manifest = json.loads(archive.read(prefix + MANIFEST_NAME))
+        if (manifest.get("application_version") != VERSION or manifest.get("package_revision") != "r4"
+                or manifest.get("schema") != "source-type-windows-application-sha256-v1"):
+            raise ValueError("Unexpected application manifest version or schema")
+        manifest_names = [record["path"] for record in manifest["files"]]
+        if len(set(manifest_names)) != len(manifest_names):
+            raise ValueError("Duplicate application manifest paths")
+        if (manifest.get("hashed_file_count") != len(manifest_names)
+                or manifest.get("zip_file_count") != len(names)
+                or manifest.get("source_file_count", 0) + manifest.get("wrapper_file_count", 0) != len(manifest_names)
+                or manifest.get("excluded_paths") != [MANIFEST_NAME]):
+            raise ValueError("Application manifest declarations are inconsistent")
         expected = {prefix + record["path"] for record in manifest["files"]} | {prefix + MANIFEST_NAME}
         if set(names) != expected:
             raise ValueError("Unexpected or missing ZIP files")
         for record in manifest["files"]:
+            safe_relative(record["path"])
             data = archive.read(prefix + record["path"])
             if len(data) != record["bytes"] or sha256(data) != record["sha256"]:
                 raise ValueError("Application manifest mismatch: " + record["path"])
-        checks.extend(["zip_crc", "single_root", "safe_paths", "no_private_runtime_paths", "manifest_complete", "all_sha256_match"])
+            if KEY_PATTERN.search(data):
+                raise ValueError("Credential-like content blocked: " + record["path"])
+            if PurePosixPath(record["path"]).suffix.lower() == ".zip":
+                raise ValueError("Nested archives are not application runtime files")
+        checks.extend(["zip_crc", "single_root", "safe_paths", "regular_files_only", "no_private_runtime_paths",
+                       "manifest_complete", "manifest_declarations_consistent", "all_sha256_match", "no_credential_patterns", "no_nested_archives"])
     return {
         "passed": True, "mode": "offline_file_packaging_no_cloud_calls",
         "application_version": VERSION, "zip_path": str(path.resolve()),

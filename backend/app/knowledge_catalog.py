@@ -25,7 +25,7 @@ def reviewed_ids(manifest: Path, review_path: Path = REVIEW_FILE) -> set[str]:
         if not row or not row.get("local_file"):
             raise ValueError(f"已核对资料缺失：{doc_id}，请重新核对")
         path = LocalKnowledgeBase._resolve_source(manifest, row["local_file"])
-        if not path.is_relative_to(PROJECT_ROOT / "数据收集包"):
+        if not path.is_relative_to((PROJECT_ROOT / "数据收集包").resolve()):
             raise ValueError(f"资料不在指定数据收集目录：{doc_id}")
         if not path.is_file() or hashlib.sha256(path.read_bytes()).hexdigest() != record["checksum"]:
             raise ValueError(f"资料已变更：{doc_id}，请重新核对后再上传")

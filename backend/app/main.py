@@ -1,8 +1,10 @@
 from __future__ import annotations
 
 import json
-import re
+import ipaddress
+import io
 import threading
+import warnings
 from functools import lru_cache
 
 from fastapi import FastAPI, File, HTTPException, UploadFile, Request
@@ -10,7 +12,7 @@ from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
 from fastapi.responses import FileResponse
 from fastapi.responses import Response
-from urllib.parse import quote
+from urllib.parse import quote, urlsplit
 
 from .agent import LowCarbonAgent
 from .calculators import calculate_generic_scenario, calculate_pv_scenario
@@ -19,38 +21,56 @@ from .retrieval import LocalKnowledgeBase
 from .knowledge_catalog import build_catalog, reviewed_ids
 from .schemas import AgentQueryRequest, AgentQueryResponse, GenericScenarioRequest, PvScenarioRequest
 from .plan_schemas import PlanRequest
+from .safety import API_VERSION, MAX_IMAGE_BYTES, MAX_TOTAL_IMAGE_BYTES, MAX_IMAGE_PIXELS, redact_error
+from .request_limits import RequestBodyLimitMiddleware
 
 
 app = FastAPI(
     title="室在人为 低碳改造智能决策体",
-    version="0.6.1",
+    version=API_VERSION,
     description="多模态API、本地Chroma RAG和确定性Python计算工具后端。",
 )
 _ingest_lock = threading.Lock()
 _knowledge_init_lock = threading.Lock()
-_plan_lock = threading.Lock()
+_cloud_lock = threading.Lock()
+_plan_lock = _cloud_lock
+app.add_middleware(RequestBodyLimitMiddleware)
 
 
 @app.exception_handler(RequestValidationError)
 async def invalid_request(request: Request, exc: RequestValidationError) -> JSONResponse:
     # JSON numbers such as 1e309 parse as infinity. Do not echo rejected values:
     # besides exposing input, nonfinite values cannot be encoded in a 422 response.
-    detail = [{"type": item["type"], "loc": item["loc"], "msg": item["msg"]}
+    detail = [{"type": item["type"],
+               "loc": [redact_error(ValueError(part)) if isinstance(part, str) else part for part in item["loc"]],
+               "msg": redact_error(ValueError(item["msg"]))}
               for item in exc.errors()]
     return JSONResponse(status_code=422, content={"detail": detail})
 
 
 def _public_error(exc: Exception) -> str:
-    message = str(exc)
-    settings = get_settings()
-    for secret in (settings.llm_api_key, settings.embedding_api_key):
-        if secret:
-            message = message.replace(secret, "[REDACTED]")
-    return re.sub(r"sk-[A-Za-z0-9_-]+", "[REDACTED]", message)
+    try:
+        settings = get_settings()
+        secrets = (settings.llm_api_key, settings.embedding_api_key)
+    except Exception:
+        secrets = ()
+    return redact_error(exc, secrets)
 
 
 @app.middleware("http")
 async def reject_cross_site_writes(request: Request, call_next):
+    # A reflected hostile Host can otherwise pass the same-origin check and rebind
+    # an attacker's domain to loopback. This distribution is not a hosted service.
+    try:
+        host = urlsplit("http://" + request.headers.get("host", ""))
+        hostname = host.hostname
+        host.port  # Validate a supplied port as well as the hostname.
+        loopback = not (host.username or host.password or host.path or host.query or host.fragment) and (
+            hostname == "localhost" or bool(hostname and ipaddress.ip_address(hostname).is_loopback))
+    except ValueError:
+        loopback = False
+    if not loopback:
+        return JSONResponse(status_code=400, content={"detail": "此本地应用只接受 localhost 或回环地址的 Host"})
     if request.method not in {"GET", "HEAD", "OPTIONS"}:
         origin = request.headers.get("origin")
         if request.headers.get("sec-fetch-site") == "cross-site" or (origin and origin.rstrip("/") != str(request.base_url).rstrip("/")):
@@ -156,12 +176,16 @@ def calculate_pv(payload: PvScenarioRequest) -> dict:
 def ingest_rag() -> dict:
     if not _ingest_lock.acquire(blocking=False):
         raise HTTPException(status_code=409, detail="已有入库任务执行中，请等待完成")
+    if not _cloud_lock.acquire(blocking=False):
+        _ingest_lock.release()
+        raise HTTPException(status_code=409, detail="已有智能任务执行中，请等待完成后入库")
     try:
         allowed = reviewed_ids(get_settings().knowledge_manifest)
         return get_knowledge_base().ingest_manifest(document_ids=allowed, skip_unchanged=True)
     except Exception as exc:
         raise HTTPException(status_code=400, detail=_public_error(exc)) from exc
     finally:
+        _cloud_lock.release()
         _ingest_lock.release()
 
 
@@ -177,10 +201,16 @@ def knowledge_catalog() -> dict:
 
 @app.post("/api/agent/query", response_model=AgentQueryResponse)
 def agent_query(payload: AgentQueryRequest) -> dict:
+    if not payload.consent_cloud:
+        raise HTTPException(status_code=422, detail="未确认云端资料处理，未执行智能问答")
+    if not _cloud_lock.acquire(blocking=False):
+        raise HTTPException(status_code=409, detail="已有智能任务执行中，请等待完成")
     try:
         return get_agent(require_knowledge=True).query(payload.question, payload.project_context, payload.region)
     except Exception as exc:
         raise HTTPException(status_code=400, detail=_public_error(exc)) from exc
+    finally:
+        _cloud_lock.release()
 
 
 @app.post("/api/vision/analyze")
@@ -188,18 +218,42 @@ async def analyze_images(files: list[UploadFile] = File(...)) -> dict:
     if not 1 <= len(files) <= 5:
         raise HTTPException(status_code=422, detail="每次请上传1至5张现场照片")
     images = []
+    total_bytes = 0
     allowed = {"image/jpeg", "image/png", "image/webp", "image/gif"}
     for uploaded in files:
         if uploaded.content_type not in allowed:
-            raise HTTPException(status_code=422, detail=f"不支持的图片格式：{uploaded.content_type}")
-        data = await uploaded.read()
-        if len(data) > 10 * 1024 * 1024:
-            raise HTTPException(status_code=422, detail=f"图片超过10MB：{uploaded.filename}")
+            raise HTTPException(status_code=422, detail="只支持静态JPEG、PNG、WebP、GIF图片")
+        data = await uploaded.read(MAX_IMAGE_BYTES + 1)
+        await uploaded.close()
+        if len(data) > MAX_IMAGE_BYTES:
+            raise HTTPException(status_code=422, detail="单张图片超过10MiB")
+        total_bytes += len(data)
+        if total_bytes > MAX_TOTAL_IMAGE_BYTES:
+            raise HTTPException(status_code=422, detail="照片合计超过32MiB，内联云端请求还需Base64编码，请缩图后重试")
+        try:
+            from PIL import Image
+            with warnings.catch_warnings():
+                warnings.simplefilter("error", Image.DecompressionBombWarning)
+                with Image.open(io.BytesIO(data)) as image:
+                    detected = {"JPEG": "image/jpeg", "PNG": "image/png", "WEBP": "image/webp", "GIF": "image/gif"}.get(image.format)
+                    if detected != uploaded.content_type:
+                        raise ValueError("图片字节与声明格式不符")
+                    if image.width * image.height > MAX_IMAGE_PIXELS:
+                        raise ValueError("图片像素总数超过2500万，请缩小后上传")
+                    if getattr(image, "is_animated", False):
+                        raise ValueError("请上传静态现场照片，不支持动画图片")
+                    image.verify()
+        except Exception:
+            raise HTTPException(status_code=422, detail="图片文件无效、格式不符、为动画或超过2500万像素，请更换静态照片") from None
         images.append((data, uploaded.content_type))
+    if not _cloud_lock.acquire(blocking=False):
+        raise HTTPException(status_code=409, detail="已有智能任务执行中，请等待完成")
     try:
         return get_agent().analyze_images(images)
     except Exception as exc:
         raise HTTPException(status_code=400, detail=_public_error(exc)) from exc
+    finally:
+        _cloud_lock.release()
 
 
 @app.get("/api/demo/plan.pdf")

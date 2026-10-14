@@ -8,16 +8,17 @@
       content="既有建筑低碳改造智能决策体的本地可交互原型"
     />
     <title>室在人为 | 低碳改造智能决策体</title>
-    <link rel="stylesheet" href="styles.css?v=0.6.1" />
+    <link rel="stylesheet" href="styles.css?v=0.6.2-r4" />
   </head>
   <body>
+    <a class="skip-link" href="#project-heading">跳到项目录入</a>
     <header class="site-header">
       <div>
         <p class="eyebrow">LOW CARBON · BUILDING INTELLIGENCE</p>
         <h1>室在人为</h1>
         <p class="subtitle">既有建筑低碳改造 · 客户演示工作台</p>
       </div>
-      <div class="header-meta"><span class="demo-badge">LOCAL DEMO / v0.6.1</span><p class="boundary">完整前期方案 PDF · 不替代施工图与正式工程审查。</p></div>
+      <div class="header-meta"><span class="demo-badge">LOCAL DEMO / v0.6.2</span><p class="boundary">完整前期方案 PDF · 不替代施工图与正式工程审查。</p></div>
     </header>
 
     <main>
@@ -110,7 +111,7 @@
         <details><summary>查看服务连接状态与资料维护</summary>
         <div class="status-grid" id="technology-status" aria-live="polite">
           <div class="status-card"><span>后端服务</span><strong id="status-backend" class="status-pill waiting">检测中</strong></div>
-          <div class="status-card"><span>智能体与多模态 API</span><strong id="status-api" class="status-pill waiting">检测中</strong></div>
+          <div class="status-card"><span>智能体 API 配置（不代表识图已验收）</span><strong id="status-api" class="status-pill waiting">检测中</strong></div>
           <div class="status-card"><span>文本向量服务</span><strong id="status-embedding" class="status-pill waiting">检测中</strong><small id="status-embedding-detail"></small></div>
           <div class="status-card"><span>本地 Chroma RAG</span><strong id="status-rag" class="status-pill waiting">检测中</strong><small id="status-rag-detail"></small></div>
           <div class="status-card"><span>确定性计算引擎</span><strong id="status-tool" class="status-pill waiting">检测中</strong></div>
@@ -128,10 +129,11 @@
           <div class="section-title">
             <div>
               <p class="step">01</p>
-              <h2 id="project-heading">项目与基线信息</h2>
+              <h2 id="project-heading" tabindex="-1">项目与基线信息</h2>
             </div>
             <p>用于识别适用的区域资料，并作为节省额与减碳量的计算基线。</p>
           </div>
+          <p class="session-note">本页不自动保存草稿，也不把表单、照片和报告写入浏览器本地存储。刷新或关闭页面会丢失未导出的内容；云端调用会另行提示数据范围与费用。</p>
           <div class="field-grid">
             <label>
               项目或建筑名称
@@ -192,10 +194,12 @@
           </div>
           <div class="photo-block">
             <div>
-              <label class="file-label" for="photos">现场照片（1–5 张）</label>
+              <label class="file-label" for="photos">现场照片（1–5 张静态图）</label>
               <input id="photos" type="file" accept="image/jpeg,image/png,image/webp,image/gif" multiple />
               <p class="hint">图片会发送到已配置的云端模型。只上传已获授权并完成脱敏的照片；所有识别结果仍须人工确认。</p>
+              <p class="hint">本项目限制：每张 ≤10 MiB、合计 ≤32 MiB、每张 ≤2500 万像素，仅静态图片。超出请先缩图；服务端还会核验真实格式和损坏图片。</p>
               <button class="secondary-button inline-button" id="analyze-photos" type="button" disabled>调用多模态 API 提取可见特征</button>
+              <p id="photo-readiness" class="hint" role="status" aria-live="polite">选择照片仅生成本地预览，不会自动上传。</p>
             </div>
             <div id="photo-preview" class="photo-preview" aria-live="polite"></div>
           </div>
@@ -339,11 +343,12 @@
           </div>
           <label for="agent-question">需要智能体核查的问题</label>
           <div class="question-chips"><button type="button" data-question="请检索2023年浙江省电力平均二氧化碳排放因子，列出数值、单位、来源和适用性限制；区分电力碳足迹因子。">查询浙江电力因子</button><button type="button" data-question="请依据知识库说明工商业输配电价为什么不能直接当作最终购电单价，并列出需要核对的账单字段。">核对电价口径</button><button type="button" data-question="望月公寓尚无真实电费账单、工程量和节能审计。请只列出开展改造比选需要补充的数据、文件格式和获取渠道，不要编造收益或回收期。">整理项目数据缺口</button></div>
-          <textarea id="agent-question" rows="4" placeholder="例如：基于已入库的现行资料，当前项目还缺哪些可用于门窗改造比选的数据？"></textarea>
+          <textarea id="agent-question" rows="4" maxlength="3000" aria-describedby="agent-readiness" placeholder="例如：基于已入库的现行资料，当前项目还缺哪些可用于门窗改造比选的数据？"></textarea>
           <div class="actions compact-actions">
             <button class="primary-button" id="ask-agent" type="button" disabled>检索资料并回答 →</button>
           </div>
-          <p class="hint">提交后，问题、当前项目基线及检索片段会发送至配置的云端服务，产生 API 费用。请勿输入个人身份、密钥或未授权资料。</p>
+          <p id="agent-readiness" class="mode-note" role="status" aria-live="polite">正在检测智能咨询的前提条件；不影响本地测算或固定示范报告。</p>
+          <p class="hint">确认后，问题、当前项目基线及检索片段会发送至配置的云端服务，产生 API 费用。取消确认不会调用；请勿输入个人身份、密钥或未授权资料。</p>
           <div id="agent-result" class="agent-output" hidden aria-live="polite"></div>
         </section>
 
@@ -366,7 +371,7 @@
           <div id="summary" class="summary" hidden></div>
           <div id="sensitivity-results" class="policy-matches" hidden></div>
           <div id="policy-matches" class="policy-matches" hidden></div>
-          <div class="table-wrap" id="result-table-wrap" hidden>
+          <div class="table-wrap" id="result-table-wrap" hidden tabindex="0" role="region" aria-label="方案比选结果，可横向滚动">
             <table>
               <thead>
                 <tr>
@@ -411,7 +416,7 @@
         <button id="confirm-accept" class="primary-button" type="button">确认继续</button>
       </div>
     </dialog>
-    <script src="client-ui.js?v=0.6.1"></script>
-    <script src="app.js?v=0.6.1"></script>
+    <script src="client-ui.js?v=0.6.2-r4"></script>
+    <script src="app.js?v=0.6.2-r4"></script>
   </body>
 </html>

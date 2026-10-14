@@ -2,11 +2,33 @@ from __future__ import annotations
 
 import base64
 import json
-from typing import Any
+from typing import Any, Literal, Annotated
+from pydantic import BaseModel, ConfigDict, Field
 
 from .calculators import calculate_generic_scenario, calculate_pv_scenario
 from .config import Settings, require_llm_settings
 from .retrieval import LocalKnowledgeBase
+from .schemas import AgentQueryRequest, GenericScenarioRequest, PvScenarioRequest
+from .safety import MAX_TOOL_CALLS, MAX_TOOL_CALLS_PER_ROUND, parse_tool_json, redact_error, reject_credentials
+
+
+class SearchToolRequest(BaseModel):
+    model_config = ConfigDict(extra="forbid", strict=True, str_strip_whitespace=True)
+    query: str = Field(min_length=1, max_length=4000)
+    region: str | None = Field(max_length=120)
+    category: Literal["policy", "standard", "tariff", "factor", "material", "report", "reference"] | None
+    top_k: int = Field(ge=1, le=10)
+
+
+class BuildingObservation(BaseModel):
+    model_config = ConfigDict(extra="forbid", strict=True, str_strip_whitespace=True, str_max_length=500)
+    facade_material: str | None
+    window_type: str | None
+    external_shading: str | None
+    roof_form: str | None
+    visible_issues: list[Annotated[str, Field(min_length=1, max_length=500)]] = Field(max_length=20)
+    uncertain_fields: list[Annotated[str, Field(min_length=1, max_length=500)]] = Field(max_length=20)
+    recommended_manual_checks: list[Annotated[str, Field(min_length=1, max_length=500)]] = Field(max_length=20)
 
 
 SYSTEM_INSTRUCTIONS = """你是既有建筑低碳改造前期决策助手。你的输出只用于初步筛查和方案比选。
@@ -142,7 +164,7 @@ class LowCarbonAgent:
         except ImportError as exc:
             raise RuntimeError("请先安装backend/requirements.txt中的openai依赖") from exc
         self.settings = settings
-        self.client = OpenAI(api_key=settings.llm_api_key, base_url=settings.llm_base_url, timeout=90, max_retries=1)
+        self.client = OpenAI(api_key=settings.llm_api_key, base_url=settings.llm_base_url, timeout=90, max_retries=0)
         self.knowledge_base = knowledge_base
 
     def _reasoning(self) -> dict[str, str] | None:
@@ -155,30 +177,29 @@ class LowCarbonAgent:
 
     def _execute_tool(self, name: str, arguments: dict[str, Any]) -> dict[str, Any]:
         if name == "search_knowledge":
+            values = SearchToolRequest.model_validate(arguments).model_dump()
             if self.knowledge_base is None or self.knowledge_base.count() == 0:
                 return {"status": "unavailable", "message": "本地知识库尚未建立，请先导入真实资料并执行RAG入库。", "results": []}
+            rows = self.knowledge_base.search(**values)
+            reject_credentials(rows)
             return {
                 "status": "ok",
-                "results": self.knowledge_base.search(
-                    arguments["query"],
-                    region=arguments["region"],
-                    category=arguments["category"],
-                    top_k=arguments["top_k"],
-                ),
+                "results": rows,
             }
         if name == "calculate_generic_scenario":
-            return calculate_generic_scenario(**arguments)
+            return calculate_generic_scenario(**GenericScenarioRequest.model_validate(arguments, strict=True).model_dump())
         if name == "calculate_pv_scenario":
-            return calculate_pv_scenario(**arguments)
+            return calculate_pv_scenario(**PvScenarioRequest.model_validate(arguments, strict=True).model_dump())
         raise ValueError(f"未注册的工具：{name}")
 
     def query(self, question: str, project_context: dict[str, Any], region: str | None = None) -> dict[str, Any]:
+        payload = AgentQueryRequest.model_validate({"question": question, "project_context": project_context, "region": region})
         if self.knowledge_base is None or self.knowledge_base.count() == 0:
             raise RuntimeError("RAG知识库未就绪，智能问答已停止。请先完成真实资料入库。")
         user_payload = {
-            "question": question,
-            "region": region,
-            "project_context": project_context,
+            "question": payload.question,
+            "region": payload.region,
+            "project_context": payload.project_context,
         }
         input_items: list[Any] = [{"role": "user", "content": json.dumps(user_payload, ensure_ascii=False)}]
         citations: list[dict[str, Any]] = []
@@ -199,24 +220,37 @@ class LowCarbonAgent:
             response = self.client.responses.create(**request)
             input_items += list(response.output)
             calls = [item for item in response.output if item.type == "function_call"]
+            if len(calls) > MAX_TOOL_CALLS_PER_ROUND or len(tool_results) + len(calls) > MAX_TOOL_CALLS:
+                raise RuntimeError("模型工具调用超过预算，已停止；单轮最多四次、总计最多十六次")
             if not calls:
                 if not any(item["tool"] == "search_knowledge" and item["result"].get("status") == "ok" for item in tool_results):
                     raise RuntimeError("模型未完成知识库检索，本次回答已停止；请检查API工具调用兼容性。")
-                return {"answer": response.output_text, "citations": citations, "tool_results": tool_results}
+                answer = response.output_text.strip()
+                if not answer or len(answer) > 10000:
+                    raise RuntimeError("模型答复为空或过长，本次回答已停止；请缩小问题范围")
+                return {"answer": answer, "citations": citations, "tool_results": tool_results}
             for call in calls:
                 arguments = {}
                 try:
-                    arguments = json.loads(call.arguments)
-                    if not isinstance(arguments, dict):
-                        raise ValueError("工具参数必须是JSON对象")
+                    arguments = parse_tool_json(call.arguments)
+                    if call.name == "search_knowledge" and payload.region:
+                        # The model cannot broaden a user-supplied locality to null
+                        # or substitute another jurisdiction through tool arguments.
+                        arguments["region"] = payload.region
                     result = self._execute_tool(call.name, arguments)
                 except json.JSONDecodeError:
                     result = {"status": "error", "message": "工具参数不是合法JSON，未执行工具。请重新生成合法JSON对象；空值必须写null，不得使用undefined、注释或尾逗号。"}
                 except Exception as exc:
-                    result = {"status": "error", "message": str(exc)}
+                    result = {"status": "error", "message": redact_error(exc, (
+                        getattr(self.settings, "llm_api_key", ""), getattr(self.settings, "embedding_api_key", "")))}
                 tool_results.append({"tool": call.name, "arguments": arguments, "result": result})
                 if call.name == "search_knowledge":
-                    citations.extend(result.get("results", []))
+                    seen = {(item.get("document_id"), item.get("chunk_index")) for item in citations}
+                    for item in result.get("results", []):
+                        identity = (item.get("document_id"), item.get("chunk_index"))
+                        if identity not in seen:
+                            citations.append(item)
+                            seen.add(identity)
                 input_items.append(
                     {
                         "type": "function_call_output",
@@ -253,7 +287,7 @@ class LowCarbonAgent:
         response = self.client.responses.create(**request)
         for item in response.output:
             if item.type == "function_call" and item.name == "record_building_observation":
-                result = json.loads(item.arguments)
+                result = BuildingObservation.model_validate(parse_tool_json(item.arguments)).model_dump()
                 result["requires_human_confirmation"] = True
                 return result
         raise RuntimeError("多模态模型未返回结构化观察结果")

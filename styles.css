@@ -304,3 +304,19 @@ details[open] > summary { margin-bottom: .7rem; }
 .plan-options { display: grid; gap: 10px; max-width: 900px; }
 .plan-options input { max-width: 360px; }
 #plan-status { margin-top: 14px; overflow-wrap: anywhere; }
+/* Keyboard access and explicit session/privacy boundaries. */
+:focus-visible { outline: 3px solid #d99120; outline-offset: 4px; }
+.actions a.secondary-button:focus-visible { outline: 3px solid #d99120; outline-offset: 4px; }
+.skip-link { position: absolute; left: 16px; top: -80px; z-index: 100; padding: 12px 18px; color: #113f41; background: white; border: 2px solid #168279; border-radius: 8px; }
+.skip-link:focus { top: 16px; }
+.session-note { color: #45625c; background: #eff7f3; border-left: 3px solid #168279; padding: .8rem 1rem; font-size: .78rem; line-height: 1.8; }
+.status-card { min-width: 0; }
+.status-card .status-pill { max-width: 100%; overflow-wrap: anywhere; line-height: 1.45; }
+/* File controls have an intrinsic width: allow grid tracks and items to shrink. */
+.photo-block > *, .upload-card, .field-grid > label, .client-hero > *, .plan-options { min-width: 0; }
+input[type="file"] { display: block; width: 100%; max-width: 100%; min-width: 0; }
+button, .actions > a { max-width: 100%; min-width: 0; white-space: normal; overflow-wrap: anywhere; }
+.table-wrap { max-width: 100%; min-width: 0; }
+@media (max-width: 600px) {
+  .field-grid, .upload-grid, .summary, .photo-block, .status-grid, .case-overview { grid-template-columns: minmax(0, 1fr); }
+}

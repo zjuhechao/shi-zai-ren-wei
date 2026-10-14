@@ -11,5 +11,5 @@ __pycache__/
 /源码仓库_*.bundle
 *.bundle
 *.zip
-!downloads/app-windows-v0.6.1.zip
+!downloads/app-windows-v0.6.2.zip
 /git_release/

@@ -6,6 +6,7 @@ from typing import Annotated, Literal
 import re
 from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 from .schemas import GenericScenarioRequest, PvScenarioRequest
+from .safety import reject_credentials
 
 
 class BoundedModel(BaseModel):
@@ -52,12 +53,16 @@ class PlanRequest(BoundedModel):
     pv_scenario: PlanPv | None = None
     objective: str = Field(default="在不降低安全与使用品质的前提下，开展低碳改造前期方案比选。", max_length=1500)
     comparison_investment: float | None = Field(default=None, ge=0)
-    consent_cloud: bool = False
+    consent_cloud: bool = Field(default=False, strict=True)
 
     @model_validator(mode="after")
     def check_plan_inputs(self):
+        reject_credentials(self.model_dump(mode="json"))
         if not self.generic_scenarios and not self.pv_scenario:
             raise ValueError("完整方案至少需要一项已录入的可计算方案")
+        ids = [item.scenario_id for item in self.generic_scenarios]
+        if len(ids) != len(set(ids)):
+            raise ValueError("方案编号不能重复，请分别编号后再生成报告")
         for item in self.generic_scenarios:
             if item.electricity_price_cny_per_kwh != self.base.electricityPrice or item.carbon_factor_kgco2e_per_kwh != self.base.carbonFactor:
                 raise ValueError("方案的电价和碳因子必须与项目基线一致")

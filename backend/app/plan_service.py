@@ -10,6 +10,7 @@ from uuid import uuid4
 from .agent import LowCarbonAgent
 from .calculators import calculate_generic_scenario, calculate_pv_scenario
 from .plan_schemas import PlanRequest, PlanNarrative
+from .safety import API_VERSION, MAX_JSON_BODY_BYTES, reject_credentials, parse_tool_json
 
 
 PLAN_INSTRUCTIONS = """你负责编写建筑低碳改造的前期方案报告，输出中文结构化内容。
@@ -94,8 +95,7 @@ def generate_plan(payload: PlanRequest, agent: LowCarbonAgent) -> dict:
     if not payload.consent_cloud:
         raise ValueError("请先确认将项目输入和检索片段发送到已配置云端服务")
     request_json = payload.model_dump_json()
-    if re.search(r"sk-[A-Za-z0-9_.-]{16,}", request_json):
-        raise ValueError("项目输入疑似包含密钥，请删除后重试；未发送到云端")
+    reject_credentials(request_json)
     if agent.knowledge_base is None or agent.knowledge_base.count() == 0:
         raise RuntimeError("RAG知识库未就绪，不能生成带依据的完整方案")
     calculations = calculate_plan(payload)
@@ -117,6 +117,7 @@ def generate_plan(payload: PlanRequest, agent: LowCarbonAgent) -> dict:
     context = {"project":payload.base.model_dump(mode="json"),"objective":payload.objective,
                "calculated_scenarios":calculations["scenarios"],
                "retrieved_evidence":[{k:v for k,v in s.items() if k not in {"checksum"}} for s in sources]}
+    reject_credentials(context)
     tool={"type":"function","name":"record_retrofit_plan","description":"提交完整前期改造方案的定性章节。",
           "parameters":PlanNarrative.model_json_schema(),"strict":False}
     request={"model":agent.settings.llm_model,"instructions":PLAN_INSTRUCTIONS,
@@ -134,14 +135,14 @@ def generate_plan(payload: PlanRequest, agent: LowCarbonAgent) -> dict:
             calls=[x for x in response.output if x.type=="function_call" and x.name=="record_retrofit_plan"]
             if len(calls)!=1:
                 raise ValueError("模型未返回唯一的结构化方案")
-            narrative=validate_narrative(json.loads(calls[0].arguments),{s["reference_id"] for s in sources})
+            narrative=validate_narrative(parse_tool_json(calls[0].arguments, max_bytes=MAX_JSON_BODY_BYTES),{s["reference_id"] for s in sources})
             break
         except (ValueError,TypeError) as exc:
             last_error=exc
     else:
         raise RuntimeError("模型方案两次未通过结构化检查；未生成替代报告") from last_error
     now=datetime.now(timezone.utc).isoformat()
-    return {"report_id":uuid4().hex,"version":"0.6.1","created_at":now,
+    return {"report_id":uuid4().hex,"version":API_VERSION,"created_at":now,
             "input_sha256":hashlib.sha256(request_json.encode()).hexdigest(),
             "request":payload.model_dump(mode="json"),"calculations":calculations,
             "narrative":narrative.model_dump(),"sources":sources,"retrieval_runs":retrieval_runs,

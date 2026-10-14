@@ -14,7 +14,7 @@ sys.path.insert(0, str(ROOT / "backend"))
 
 PACKAGES = (
     "fastapi", "uvicorn", "openai", "chromadb", "python-multipart",
-    "python-dotenv", "pymupdf", "python-docx", "reportlab", "httpx",
+    "python-dotenv", "pymupdf", "python-docx", "reportlab", "httpx", "pillow",
 )
 
 
@@ -58,7 +58,7 @@ def collect_checks() -> dict:
             with patch.dict(os.environ, environment), patch("app.config.load_dotenv", None):
                 from fastapi.testclient import TestClient
                 from app.main import app
-                client = TestClient(app)
+                client = TestClient(app, base_url="http://127.0.0.1")
                 health = client.get("/api/health")
                 status = health.json()
                 record("no_key_health", health.status_code == 200 and not status["api_configured"] and not status["embeddings_configured"],
@@ -73,7 +73,7 @@ def collect_checks() -> dict:
                     "annual_energy_saving_kwh": 12000, "electricity_price_cny_per_kwh": 0.538,
                     "carbon_factor_kgco2e_per_kwh": 0.5, "annual_om_cny": 300,
                     "source_name": "TEST ASSUMPTIONS ONLY", "source_url": "assumption:offline-check",
-                    "data_date": "2026-10-13",
+                    "data_date": "2026-10-14",
                 })
                 valid_calculation = calculation.status_code == 200 and calculation.json().get("annualNetBenefit") == 6156
                 record("no_key_python_calculation", valid_calculation, "Assumed annual net benefit calculated by Python: 6156 CNY")
@@ -83,8 +83,13 @@ def collect_checks() -> dict:
         except Exception as exc:
             # Avoid printing configuration values if an optional prerequisite fails.
             record("offline_smoke", False, type(exc).__name__)
+    record("cloud_connectivity", False, "Not tested: no credentials are read and no paid API calls are made", required=False)
+    record("rag_quality", False, "Not tested: real authorized ingestion and retrieved-answer review are separate steps", required=False)
+    record("new_intelligent_pdf", False, "Not tested: downloading the fixed PDF does not generate a new input-dependent report", required=False)
+    record("photo_analysis", False, "Not tested: image-model access, privacy authorization and quality need separate review", required=False)
     passed = all(check["status"] == "pass" for check in checks if check["required"])
     return {"mode": "offline_no_keys_no_api_calls", "passed": passed,
+            "readiness_scope": "offline_local_demo_only", "cloud_ready": None,
             "python": sys.version.split()[0], "dependencies": dependencies, "checks": checks,
             "notice": "This verifies package prerequisites and no-key demo behavior only; it does not verify cloud connectivity, RAG quality, photos, or target-host deployment."}
 
@@ -97,6 +102,7 @@ def main() -> None:
     if args.json:
         print(json.dumps(result, ensure_ascii=False, indent=2))
     else:
+        print("OFFLINE LOCAL DEMO CHECK ONLY. A PASS does not mean cloud AI or RAG is ready.")
         for check in result["checks"]:
             print(f"[{check['status'].upper()}] {check['check']}: {check['detail']}")
         print(result["notice"])

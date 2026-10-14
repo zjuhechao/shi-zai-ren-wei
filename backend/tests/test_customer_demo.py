@@ -44,14 +44,14 @@ class CustomerDemoTests(unittest.TestCase):
 
     def test_ingest_endpoint_requires_review_before_cloud_access(self):
         with patch("app.main.reviewed_ids", side_effect=ValueError("资料已变更")), patch("app.main.get_knowledge_base") as kb:
-            response = TestClient(app).post("/api/rag/ingest")
+            response = TestClient(app, base_url="http://127.0.0.1").post("/api/rag/ingest")
             self.assertEqual(response.status_code, 400)
             kb.assert_not_called()
 
     def test_ingest_endpoint_sends_only_reviewed_ids(self):
         with patch("app.main.reviewed_ids", return_value={"approved"}), patch("app.main.get_knowledge_base") as kb:
             kb.return_value.ingest_manifest.return_value = {"indexed_documents": 1}
-            self.assertEqual(TestClient(app).post("/api/rag/ingest").status_code, 200)
+            self.assertEqual(TestClient(app, base_url="http://127.0.0.1").post("/api/rag/ingest").status_code, 200)
             kb.return_value.ingest_manifest.assert_called_once_with(document_ids={"approved"}, skip_unchanged=True)
 
     def test_review_hash_prevents_silent_file_changes(self):
@@ -83,7 +83,7 @@ class CustomerDemoTests(unittest.TestCase):
             self.assertNotIn("PRIVATE_PATH", json.dumps(result))
 
     def test_static_allowlist_never_exposes_credentials_and_storage(self):
-        client = TestClient(app)
+        client = TestClient(app, base_url="http://127.0.0.1")
         for path in ("/backend/.env", "/.env", "/storage/chroma/chroma.sqlite3", "/data/knowledge/reviewed_documents.json"):
             self.assertEqual(client.get(path).status_code, 404)
         self.assertEqual(client.get("/client-ui.js").status_code, 200)

@@ -1,4 +1,4 @@
-# 智能体后端 v0.6.1 运行说明
+# 智能体后端 v0.6.2 运行说明
 
 后端由三条相互独立的链路组成：
 
@@ -10,7 +10,9 @@
 
 ## 安装与启动
 
-软件API v0.6.1，资料分发r3。公开仓库：https://github.com/zjuhechao/shi-zai-ren-wei 。普通使用者也可下载仓库downloads/app-windows-v0.6.1.zip，完整解压后用start-app.bat；该源码型应用仍需Python及首装依赖网络，不是EXE或公网托管服务。
+软件API v0.6.2，资料分发r4。公开仓库：https://github.com/zjuhechao/shi-zai-ren-wei 。普通使用者也可下载仓库downloads/app-windows-v0.6.2.zip，完整解压后用start-app.bat；该源码型应用仍需Python及首装依赖网络，不是EXE或公网托管服务。
+
+本版增加有界请求、模型工具与向量响应校验，并在云端前拒绝疑似凭据输入。处理失败不冒充成功，不以固定报告替代新模型方案。离线准备检查不等于云端已联通；`verify_customer_demo.py` 默认离线，仅显式 `--online` 才发起付费诊断。图片字节检查不是照片效果验收。
 
 在项目根目录打开 PowerShell：
 

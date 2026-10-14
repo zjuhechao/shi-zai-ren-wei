@@ -76,6 +76,8 @@ def normalize_text(text: str) -> str:
 
 
 def chunk_text(text: str, *, chunk_size: int = 1200, overlap: int = 180) -> list[str]:
+    if type(chunk_size) is not int or type(overlap) is not int or chunk_size <= 0 or not 0 <= overlap < chunk_size:
+        raise ValueError("分块长度须为正整数，重叠须为小于分块长度的非负整数")
     text = normalize_text(text)
     if not text:
         return []
@@ -95,7 +97,8 @@ def chunk_text(text: str, *, chunk_size: int = 1200, overlap: int = 180) -> list
         candidate = f"{current}\n\n{paragraph}".strip()
         if current and len(candidate) > chunk_size:
             chunks.append(current)
-            tail = current[-overlap:] if overlap else ""
+            tail_length = min(overlap, max(0, chunk_size - len(paragraph) - 2))
+            tail = current[-tail_length:] if tail_length else ""
             current = f"{tail}\n\n{paragraph}".strip()
         else:
             current = candidate

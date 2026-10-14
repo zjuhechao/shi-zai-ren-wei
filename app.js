@@ -20,6 +20,18 @@ const state = {
   catalog: null,
   planBusy: false,
   planRevision: 0,
+  healthBusy: false,
+  catalogBusy: false,
+  calculateBusy: false,
+  visionBusy: false,
+  photoRevision: 0,
+  questionRevision: 0,
+  optionsRevision: 0,
+  policiesRevision: 0,
+  manifestFound: false,
+  visionModel: "",
+  confirmationPending: false,
+  scenarioBusy: false,
 };
 
 const FALLBACK_CASE = {
@@ -50,16 +62,29 @@ const number = (id) => {
 };
 const checked = (id) => $(id).checked;
 
-async function apiRequest(path, options = {}) {
-  const response = await fetch(path, options);
-  let body = {};
+async function requestResource(path, options, consume, timeoutMs = 30000) {
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), timeoutMs);
   try {
-    body = await response.json();
-  } catch (_error) {
-    body = {};
+    return await consume(await fetch(path, { ...options, signal: controller.signal }));
+  } catch (error) {
+    if (controller.signal.aborted) throw new Error("等待响应超时。云端任务可能仍在运行，请先核对服务记录后再重试，避免重复计费");
+    if (error instanceof TypeError) throw new Error("无法连接本地服务，请确认后端正在运行，再点击重新检测");
+    throw error;
+  } finally {
+    clearTimeout(timer);
   }
-  if (!response.ok) throw new Error(body.detail || `请求失败（${response.status}）`);
-  return body;
+}
+
+async function apiRequest(path, options = {}, timeoutMs = 30000) {
+  return requestResource(path, options, async response => {
+    let body;
+    try { body = await response.json(); } catch (_error) {
+      throw new Error(`服务返回无法解析的响应（${response.status}），请检查后端日志`);
+    }
+    if (!response.ok) throw new Error(ClientUI.apiError(body.detail, response.status));
+    return body;
+  }, timeoutMs);
 }
 
 function setStatus(id, text, kind) {
@@ -69,27 +94,32 @@ function setStatus(id, text, kind) {
 }
 
 async function checkBackend() {
+  if (state.healthBusy) return;
+  state.healthBusy = true;
+  $("check-backend").disabled = true;
   ["status-backend", "status-api", "status-embedding", "status-rag", "status-tool"].forEach((id) => setStatus(id, "检测中", "waiting"));
   try {
-    const health = await apiRequest("/api/health");
+    const health = await apiRequest("/api/health", {}, 8000);
     state.backendReady = true;
     state.apiConfigured = Boolean(health.api_configured);
     state.embeddingsConfigured = Boolean(health.embeddings_configured);
-    state.ragReady = Boolean(health.rag_ready);
+    state.ragReady = Boolean(health.rag_ready) && Number(health.rag_chunks) > 0;
+    state.manifestFound = Boolean(health.manifest_found);
+    state.visionModel = health.vision_model || "";
     setStatus("status-backend", "已连接", "ok");
-    setStatus("status-api", state.apiConfigured ? `${health.model} 已配置` : "未配置密钥", state.apiConfigured ? "ok" : "off");
+    setStatus("status-api", state.apiConfigured ? `${health.model} 已配置（待调用核验）` : "配置未齐", state.apiConfigured ? "ok" : "off");
     setStatus("status-embedding", state.embeddingsConfigured ? "已配置" : "未配置", state.embeddingsConfigured ? "ok" : "off");
     $("status-embedding-detail").textContent = health.embedding_model || "需单独的文本向量模型";
     setStatus("status-rag", state.ragReady ? "已建立" : (state.embeddingsConfigured ? "尚未入库" : "等待向量服务"), state.ragReady ? "ok" : "off");
     setStatus("status-tool", "Python 已启用", "ok");
     $("status-rag-detail").textContent = health.rag_chunks ? `${health.rag_chunks} 个文本块` : (health.manifest_found ? "知识清单已就位" : "未找到知识清单");
     $("ingest-rag").disabled = state.ingestBusy || !state.embeddingsConfigured || !health.manifest_found;
-    $("analyze-photos").disabled = !state.apiConfigured || state.photoFiles.length === 0;
+    $("analyze-photos").disabled = state.visionBusy || !state.apiConfigured || state.photoFiles.length === 0;
     $("ask-agent").disabled = state.agentBusy || !(state.apiConfigured && state.ragReady);
     if (state.apiConfigured && state.ragReady) {
       $("mode-note").textContent = "配置齐备且知识库非空；密钥是否有效、模型工具调用和召回质量仍需实际调用验收。数值由Python确定性工具计算。";
     } else if (state.apiConfigured && !state.embeddingsConfigured) {
-      $("mode-note").textContent = "智能体与多模态已配置；语义RAG仍缺独立嵌入服务。DeepSeek密钥不能替代文本向量接口。";
+      $("mode-note").textContent = "文本模型参数已配置，联通与照片能力仍须调用验收；语义RAG缺独立嵌入服务。DeepSeek密钥不能替代文本向量接口。";
     } else {
       $("mode-note").textContent = "Python计算后端已连接；未配置的API或RAG能力保持关闭。请按backend/.env.example填写新密钥。";
     }
@@ -98,6 +128,8 @@ async function checkBackend() {
     state.apiConfigured = false;
     state.embeddingsConfigured = false;
     state.ragReady = false;
+    state.manifestFound = false;
+    state.visionModel = "";
     setStatus("status-backend", "未启动", "off");
     setStatus("status-api", "不可用", "off");
     setStatus("status-embedding", "不可用", "off");
@@ -109,8 +141,24 @@ async function checkBackend() {
     $("analyze-photos").disabled = true;
     $("ask-agent").disabled = true;
     $("mode-note").textContent = "当前仅为离线浏览器校验模式：不会调用大模型、RAG 或 Python 工具。运行 backend/run.py 后再重新检测。";
+  } finally {
+    state.healthBusy = false;
+    $("check-backend").disabled = false;
   }
+  updateCapabilityHints();
   updatePlanButton();
+}
+
+function updateCapabilityHints() {
+  const missing = [];
+  if (!state.backendReady) missing.push("启动本地后端");
+  else {
+    if (!state.apiConfigured) missing.push("配置模型 API 密钥");
+    if (!state.embeddingsConfigured) missing.push("配置百炼向量密钥、Base URL 与向量模型");
+    if (!state.ragReady) missing.push("核对公开资料后真实入库");
+  }
+  $("agent-readiness").textContent = missing.length ? `智能咨询暂不可用：请${missing.join("、")}，然后重新检测。无密钥仍可运行本地确定性测算和下载固定示范 PDF。` : "智能咨询可调用；配置状态不等于密钥有效或检索结论可靠，每次答复仍须核对原文。";
+  $("photo-readiness").textContent = !state.backendReady || !state.apiConfigured ? "照片分析需要已连接的后端和模型 API。选择照片仅生成本地预览，不会自动上传。" : `VISION_MODEL：${state.visionModel || "待配置"}。模型是否支持图像及接口联通仍需验收，不因配置文本 API 而视为识图已完成。照片仅在确认调用后发送云端，请核对授权、脱敏和费用。`;
 }
 
 function renderDemoCase(data) {
@@ -138,6 +186,8 @@ async function loadDemoCaseStatus() {
 }
 
 function confirmAction(message) {
+  if (state.confirmationPending) return Promise.resolve(false);
+  state.confirmationPending = true;
   const dialog = $("action-confirm");
   $("confirm-message").textContent = message;
   return new Promise((resolve) => {
@@ -146,6 +196,7 @@ function confirmAction(message) {
       $("confirm-accept").onclick = null;
       $("confirm-cancel").onclick = null;
       dialog.oncancel = null;
+      state.confirmationPending = false;
       resolve(accepted);
     };
     $("confirm-accept").onclick = () => finish(true);
@@ -156,11 +207,9 @@ function confirmAction(message) {
 }
 
 async function loadWangyueFields() {
-  if (state.dataNature === "assumption") {
-    if (!await confirmAction("切回望月公寓将清空全部假设输入、导入资料和报告，继续吗？")) return;
-    resetCase();
-  }
-  invalidateReport();
+  const hasInputs = state.report || state.importedOptions.length || state.policies.length || state.photoFiles.length || [...document.querySelectorAll("#project-form input, #project-form textarea")].some(input => input.type === "checkbox" ? input.checked : input.value.trim()) || ["project-name", "annual-electricity", "carbon-factor", "generic-investment", "pv-capacity"].some(id => field(id));
+  if (hasInputs && !await confirmAction("切换到望月公寓将清空当前全部输入、导入资料、图片和报告，避免将其他项目数值混入真实案例。继续吗？")) return;
+  resetCase();
   const prefill = state.demoCase?.safe_prefill || FALLBACK_CASE.safe_prefill;
   $("project-name").value = prefill.project_name || "望月公寓";
   $("region").value = prefill.region || "浙江省 杭州市";
@@ -191,6 +240,10 @@ function resetCase() {
   $("plan-objective").value = "";
   $("plan-comparison-investment").value = "";
   state.planRevision += 1;
+  state.optionsRevision += 1;
+  state.policiesRevision += 1;
+  state.photoRevision += 1;
+  state.questionRevision += 1;
   state.importedOptions = [];
   state.policies = [];
   state.photoFiles = [];
@@ -209,9 +262,15 @@ function resetCase() {
 }
 
 async function loadAssumptions() {
+  if (state.scenarioBusy) return;
   if (!await confirmAction("将覆盖当前未保存输入，载入明确标注的假设情景。假设不会视为望月公寓真实数据。继续吗？")) return;
+  const revision = state.revision;
+  state.scenarioBusy = true;
+  $("load-assumptions").disabled = true;
+  $("start-demo").disabled = true;
   try {
     const scenario = await apiRequest("/api/demo/assumptions");
+    if (revision !== state.revision) return;
     resetCase();
     state.dataNature = "assumption";
     state.assumptionNotice = scenario.notice;
@@ -223,7 +282,11 @@ async function loadAssumptions() {
     $("data-nature-banner").hidden = false;
     $("project-heading").scrollIntoView({ behavior: "smooth", block: "start" });
   } catch (error) {
-    window.alert(`假设情景未载入：${error.message}。请先启动后端。`);
+    if (revision === state.revision) window.alert(`假设情景未载入：${error.message}。请先启动后端。`);
+  } finally {
+    state.scenarioBusy = false;
+    $("load-assumptions").disabled = false;
+    $("start-demo").disabled = false;
   }
 }
 
@@ -249,7 +312,7 @@ function decimal(value, digits = 2) {
 }
 
 function valueMissing(value) {
-  return value === null || value === "" || Number.isNaN(value);
+  return value === null || value === "" || (typeof value === "number" && !Number.isFinite(value));
 }
 
 function requireValue(errors, condition, label) {
@@ -266,7 +329,9 @@ function validateBase() {
   requireValue(errors, valueMissing(number("carbon-factor")) || number("carbon-factor") < 0, "电力排放因子");
   requireValue(errors, valueMissing(field("carbon-source")), "碳因子来源名称");
   requireValue(errors, valueMissing(field("carbon-url")), "碳因子来源链接或文件编号");
-  requireValue(errors, valueMissing(field("baseline-date")), "数据基准日期");
+  requireValue(errors, !validDate(field("baseline-date")), "有效的数据基准日期（YYYY-MM-DD）");
+  [["floor-area", "建筑面积"], ["roof-area", "屋顶可用面积"]].forEach(([id, label]) => { if (field(id) && (valueMissing(number(id)) || number(id) < 0)) errors.push(`${label}必须为有限的非负数`); });
+  if (field("construction-year") && (!Number.isInteger(number("construction-year")) || number("construction-year") < 1800 || number("construction-year") > 2100)) errors.push("建筑年代必须为 1800–2100 的整数年份");
   return errors;
 }
 
@@ -286,6 +351,7 @@ function validateGeneric() {
     ["generic-url", "通用方案的来源链接、文件编号或归档路径"],
     ["generic-date", "通用方案的数据日期"],
   ].forEach(([id, label]) => requireValue(errors, valueMissing(field(id)), label));
+  if (field("generic-date") && !validDate(field("generic-date"))) errors.push("通用方案的数据日期必须为有效 YYYY-MM-DD 日期");
   if (!valueMissing(number("generic-investment")) && !valueMissing(number("generic-subsidy")) && number("generic-subsidy") > number("generic-investment")) {
     errors.push("通用方案的已确认补贴不能大于改造总投资，请核验口径");
   }
@@ -311,6 +377,7 @@ function validatePv() {
     ["pv-url", "光伏来源链接、文件编号或归档路径"],
     ["pv-date", "光伏数据日期"],
   ].forEach(([id, label]) => requireValue(errors, valueMissing(field(id)), label));
+  if (field("pv-date") && !validDate(field("pv-date"))) errors.push("光伏的数据日期必须为有效 YYYY-MM-DD 日期");
   if (!valueMissing(number("pv-investment")) && !valueMissing(number("pv-subsidy")) && number("pv-subsidy") > number("pv-investment")) {
     errors.push("光伏方案的已确认补贴不能大于改造总投资，请核验口径");
   }
@@ -478,6 +545,9 @@ function renderResults(report) {
   if (report.sensitivity) {
     $("sensitivity-results").innerHTML = `<h3>假设敏感性分析</h3><p>${escapeHtml(report.sensitivity.notice)}</p><ul>${report.sensitivity.scenarios.map((item) => `<li>${escapeHtml(item.label)}：${item.error ? escapeHtml(item.error) : `年净收益 ${money(item.result.annualNetBenefit)}，静态回收期 ${item.result.payback === null ? "不输出" : `${decimal(item.result.payback)} 年`}`}</li>`).join("")}</ul>`;
     $("sensitivity-results").hidden = false;
+  } else if (report.sensitivityError) {
+    $("sensitivity-results").textContent = report.sensitivityError;
+    $("sensitivity-results").hidden = false;
   }
   const totals = report.scenarios.reduce(
     (current, scenario) => ({
@@ -530,9 +600,12 @@ function renderPolicyMatches(region) {
 
 async function calculate(event) {
   event.preventDefault();
+  if (state.calculateBusy) return;
   invalidateReport();
   const revision = state.revision;
   const errors = [...validateBase(), ...validateGeneric(), ...validatePv()];
+  if (checked("generic-enabled") && number("generic-saving") > number("annual-electricity")) errors.push("单项通用方案节电量不能大于建筑年用电量，请核对基线与节能范围");
+  if (state.importedOptions.some(option => option.annualSavingKwh > number("annual-electricity"))) errors.push("导入的单项通用方案节电量不能大于建筑年用电量");
   const hasManual = checked("generic-enabled") || checked("pv-enabled");
   if (!hasManual && state.importedOptions.length === 0) errors.push("至少录入一项通用方案、光伏方案，或导入一项可复核方案 CSV");
   if (errors.length) {
@@ -546,25 +619,34 @@ async function calculate(event) {
     return;
   }
   const base = buildBase();
+  const usingBackend = state.backendReady;
+  const genericInput = checked("generic-enabled") ? manualGenericInput() : null;
+  const pvInput = checked("pv-enabled") ? pvApiPayload(base) : null;
+  const imported = state.importedOptions.slice();
+  const policies = state.policies.slice();
   const scenarios = [];
+  state.calculateBusy = true;
+  $("calculate").disabled = true;
+  $("calculate").textContent = "正在校验与测算…";
+  $("validation").setAttribute("aria-busy", "true");
   try {
-    if (state.backendReady) {
+    if (usingBackend) {
       const requests = [];
-      if (checked("generic-enabled")) {
+      if (genericInput) {
         requests.push(apiRequest("/api/calculate/generic", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(genericApiPayload(manualGenericInput(), base)),
+          body: JSON.stringify(genericApiPayload(genericInput, base)),
         }));
       }
-      if (checked("pv-enabled")) {
+      if (pvInput) {
         requests.push(apiRequest("/api/calculate/pv", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(pvApiPayload(base)),
+          body: JSON.stringify(pvInput),
         }));
       }
-      state.importedOptions.forEach((record) => {
+      imported.forEach((record) => {
         requests.push(apiRequest("/api/calculate/generic", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -573,37 +655,44 @@ async function calculate(event) {
       });
       scenarios.push(...(await Promise.all(requests)));
     } else {
-      if (checked("generic-enabled")) scenarios.push(manualGenericScenario(base));
-      if (checked("pv-enabled")) scenarios.push(makePvScenario(base));
-      state.importedOptions.forEach((record) => scenarios.push(makeGenericScenario(record, base)));
+      if (genericInput) scenarios.push(makeGenericScenario(genericInput, base));
+      if (pvInput) scenarios.push(makePvScenario(base));
+      imported.forEach((record) => scenarios.push(makeGenericScenario(record, base)));
       scenarios.forEach((scenario) => { scenario.calculationEngine = "Browser offline validation"; });
     }
+    if (state.revision !== revision) return;
+    if (scenarios.some(scenario => ["netInvestment", "annualBenefit", "annualNetBenefit", "annualCarbon"].some(key => !Number.isFinite(scenario[key])) || scenario.payback !== null && !Number.isFinite(scenario.payback))) throw new Error("计算结果超出有限数值范围，请核对输入量级");
+    const report = {
+      createdAt: new Date().toISOString(),
+      executionMode: usingBackend ? "Python deterministic tool" : "Browser offline validation",
+      softwareVersion: "0.6.2",
+      dataNature: base.dataNature,
+      assumptions: base.dataNature === "assumption" ? ClientUI.currentAssumptions(base, scenarios) : [],
+      base,
+      scenarios,
+      policies,
+      disclaimer: (base.dataNature === "assumption" ? base.assumptionNotice + " " : "") + "所有数值均为初步测算；需由具备相应资质和权限的人员结合现场条件、适用政策和正式设计资料复核。",
+    };
+    report.scenarios.forEach((scenario) => { scenario.dataNature = base.dataNature; });
+    if (usingBackend && genericInput) {
+      try {
+        report.sensitivity = await apiRequest("/api/calculate/sensitivity", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(genericApiPayload(genericInput, base)) });
+      } catch (_error) { report.sensitivityError = "敏感性分析未完成，未使用替代结果。"; }
+    }
+    if (state.revision !== revision) return;
+    state.report = report;
+    $("export-html").disabled = false;
+    setValidation([], `已使用 ${scenarios.length} 项可复核方案生成结果；计算模式：${state.report.executionMode}。`);
+    renderResults(state.report);
+    updatePlanButton();
   } catch (error) {
-    setValidation([`Python 计算未完成：${error.message}`], "");
-    return;
+    if (state.revision === revision) setValidation([`计算未完成：${error.message}`], "");
+  } finally {
+    state.calculateBusy = false;
+    $("calculate").disabled = false;
+    $("calculate").textContent = "校验并生成初步方案报告";
+    $("validation").setAttribute("aria-busy", "false");
   }
-  const report = {
-    createdAt: new Date().toISOString(),
-    executionMode: state.backendReady ? "Python deterministic tool" : "Browser offline validation",
-    dataNature: state.dataNature,
-    assumptions: state.dataNature === "assumption" ? ClientUI.currentAssumptions(base, scenarios) : [],
-    base,
-    scenarios,
-    policies: state.policies,
-    disclaimer: (state.dataNature === "assumption" ? state.assumptionNotice + " " : "") + "所有数值均为初步测算；需由具备相应资质和权限的人员结合现场条件、适用政策和正式设计资料复核。",
-  };
-  report.scenarios.forEach((scenario) => { scenario.dataNature = state.dataNature; });
-  if (state.backendReady && checked("generic-enabled")) {
-    try {
-      report.sensitivity = await apiRequest("/api/calculate/sensitivity", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(genericApiPayload(manualGenericInput(), base)) });
-    } catch (_error) { report.sensitivityError = "敏感性分析未完成，未使用替代结果。"; }
-  }
-  if (state.revision !== revision) return;
-  state.report = report;
-  $("export-html").disabled = false;
-  setValidation([], `已使用 ${scenarios.length} 项可复核方案生成结果；计算模式：${state.report.executionMode}。`);
-  renderResults(state.report);
-  updatePlanButton();
 }
 
 function updatePlanButton() {
@@ -612,30 +701,40 @@ function updatePlanButton() {
 }
 
 async function generateFullPlan() {
-  if (!state.report || state.planBusy) return;
-  if (!await confirmAction("将当前项目基线、方案输入、目标及检索片段发送给已配置的百炼和 DeepSeek 服务，生成完整方案 PDF，可能产生 API 费用。不发送照片或密钥文件。请确认这些输入已获授权。继续吗？")) return;
+  if (!state.report || state.planBusy || !state.backendReady || !state.apiConfigured || !state.ragReady) { updatePlanButton(); return; }
   const revision = state.revision;
   const planRevision = state.planRevision;
   const base = buildBase();
+  const comparison = number("plan-comparison-investment");
+  if (comparison !== null && (!Number.isFinite(comparison) || comparison < 0)) { $("plan-status").textContent = "比较投资必须为有限的非负数；留空则不增加情景。"; return; }
   const generic = [];
   if (checked("generic-enabled")) generic.push(genericApiPayload(manualGenericInput(), base));
   state.importedOptions.forEach(record => generic.push(genericApiPayload(record, base)));
+  if (generic.length > 8) { $("plan-status").textContent = "完整 PDF 最多纳入 8 项通用方案，请先减少方案再确认云端调用。现有本地测算仍保留。"; return; }
+  if (new Set(generic.map(record => record.scenario_id)).size !== generic.length) { $("plan-status").textContent = "方案 ID 重复：请避免导入记录使用手动方案的 manual-generic 编号，再生成完整 PDF。"; return; }
   const request = {base, generic_scenarios: generic, pv_scenario: checked("pv-enabled") ? pvApiPayload(base) : null,
     objective: field("plan-objective") || "在保障安全与使用品质的前提下，形成改造措施、投资分析、实施安排与效果验证方案。",
-    comparison_investment: number("plan-comparison-investment"), consent_cloud: true};
+    comparison_investment: comparison, consent_cloud: true};
+  const payload = JSON.stringify(request);
+  if (!await confirmAction("将当前项目基线、方案输入、目标及检索片段发送给已配置的百炼和 DeepSeek 服务，生成完整方案 PDF，可能产生 API 费用。不发送照片或密钥文件。请确认这些输入已获授权。继续吗？")) return;
+  if (revision !== state.revision || planRevision !== state.planRevision) { $("plan-status").textContent = "授权确认期间输入或目标已改变，未向云端发送本次请求。请按最新内容重新测算并确认。"; return; }
+  if (!state.report || state.planBusy || !state.backendReady || !state.apiConfigured || !state.ragReady) { updatePlanButton(); return; }
   state.planBusy = true;
   $("generate-plan").disabled = true;
   $("generate-plan").textContent = "正在生成完整 PDF…";
   $("plan-status").textContent = "正在重新计算、检索资料并编写方案；请保持本页打开，预计需要几分钟。";
   try {
-    const response = await fetch("/api/reports/plan", {method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(request)});
-    if (!response.ok) {
-      let message = `请求失败（${response.status}）`;
-      try { const error = await response.json(); message = typeof error.detail === "string" ? error.detail : "输入未通过校验，请核对比较投资、方案数量及基线字段。"; } catch (_) {}
-      throw new Error(message);
-    }
-    if (!response.headers.get("content-type")?.includes("application/pdf")) throw new Error("服务器未返回 PDF，未保存伪装报告。");
-    const blob = await response.blob();
+    const { response, blob } = await requestResource("/api/reports/plan", {method:"POST",headers:{"Content-Type":"application/json"},body:payload}, async response => {
+      if (!response.ok) {
+        let message = `请求失败（${response.status}）`;
+        try { const error = await response.json(); message = ClientUI.apiError(error.detail, response.status); } catch (_) {}
+        throw new Error(message);
+      }
+      if (!response.headers.get("content-type")?.includes("application/pdf")) throw new Error("服务器未返回 PDF，未保存伪装报告。");
+      const blob = await response.blob();
+      if (!blob.size || await blob.slice(0, 5).text() !== "%PDF-") throw new Error("返回内容不是有效 PDF 文件，未保存伪装报告");
+      return { response, blob };
+    }, 360000);
     if (revision !== state.revision || planRevision !== state.planRevision) {
       $("plan-status").textContent = "生成期间输入或目标发生变化，旧 PDF 已丢弃；请按最新内容重新生成。";
       return;
@@ -643,12 +742,14 @@ async function generateFullPlan() {
     const link = document.createElement("a");
     const url = URL.createObjectURL(blob);
     link.href = url;
-    link.download = `${base.dataNature === "assumption" ? "假设情景_" : "待核验_"}${base.projectName.replace(/[\\/:*?"<>|]/g,"_")}_改造方案与分析报告.pdf`;
+    link.download = `${base.dataNature === "assumption" ? "假设情景_" : "待核验_"}${ClientUI.filename(base.projectName)}_改造方案与分析报告.pdf`;
+    document.body.append(link);
     link.click();
+    link.remove();
     setTimeout(() => URL.revokeObjectURL(url), 10000);
     $("plan-status").textContent = `完整方案 PDF 已生成并下载。本次检索 ${response.headers.get("X-Source-Count") || "若干"} 个片段；报告编号 ${response.headers.get("X-Report-Id") || "见PDF"}。请核验工程条件后使用。`;
   } catch (error) {
-    $("plan-status").textContent = `完整方案未生成：${error.message}。现有测算结果仍保留；不会提供替代的伪完成报告。`;
+    if (revision === state.revision && planRevision === state.planRevision) $("plan-status").textContent = `完整方案未生成：${error.message}。现有测算结果仍保留；不会提供替代的伪完成报告。`;
   } finally {
     state.planBusy = false;
     $("generate-plan").textContent = "生成并下载完整方案 PDF →";
@@ -661,6 +762,7 @@ function parseCsv(text) {
   let row = [];
   let cell = "";
   let quoted = false;
+  let closedQuoted = false;
   for (let index = 0; index < text.length; index += 1) {
     const char = text[index];
     const next = text[index + 1];
@@ -668,32 +770,58 @@ function parseCsv(text) {
       cell += '"';
       index += 1;
     } else if (char === '"') {
-      quoted = !quoted;
+      if (quoted) { quoted = false; closedQuoted = true; }
+      else {
+        if (cell.trim() || closedQuoted) throw new Error("CSV 引号位置不规范，请重新导出 CSV");
+        quoted = true;
+        cell = "";
+      }
     } else if (char === "," && !quoted) {
       row.push(cell.trim());
       cell = "";
+      closedQuoted = false;
     } else if ((char === "\n" || char === "\r") && !quoted) {
       if (char === "\r" && next === "\n") index += 1;
       row.push(cell.trim());
       if (row.some((item) => item !== "")) rows.push(row);
       row = [];
       cell = "";
+      closedQuoted = false;
     } else {
+      if (closedQuoted && !/\s/.test(char)) throw new Error("CSV 引号后出现多余字符，请重新导出 CSV");
       cell += char;
     }
   }
+  if (quoted) throw new Error("CSV 引号未闭合，请以 UTF-8 编码重新导出规范 CSV");
   row.push(cell.trim());
   if (row.some((item) => item !== "")) rows.push(row);
   if (rows.length < 2) throw new Error("CSV 至少应包含表头和一条数据记录");
   const headers = rows[0].map((header) => header.replace(/^\uFEFF/, ""));
+  if (headers.some(header => !header) || new Set(headers).size !== headers.length) throw new Error("CSV 表头不得为空或重复");
+  if (rows.length > 501) throw new Error("单次导入最多 500 条记录，请拆分文件");
+  const irregular = rows.slice(1).findIndex(values => values.length !== headers.length);
+  if (irregular !== -1) throw new Error(`CSV 第 ${irregular + 2} 行列数与表头不一致，请核对带逗号字段的引号`);
   return rows.slice(1).map((values) => Object.fromEntries(headers.map((header, index) => [header, values[index] ?? ""])));
+}
+
+function validDate(value) {
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(value)) return false;
+  const date = new Date(value + "T00:00:00Z");
+  return Number.isFinite(date.getTime()) && date.toISOString().slice(0, 10) === value;
+}
+
+function csvText(file) {
+  if (file.size > 2 * 1024 * 1024) return Promise.reject(new Error("CSV 文件应小于 2 MB，请拆分后导入"));
+  return file.text();
 }
 
 function loadOptions(event) {
   const file = event.target.files[0];
   if (!file) return;
-  file
-    .text()
+  const revision = ++state.optionsRevision;
+  state.importedOptions = [];
+  invalidateReport();
+  return csvText(file)
     .then(parseCsv)
     .then((rows) => {
       const required = [
@@ -710,10 +838,14 @@ function loadOptions(event) {
       const missingHeaders = required.filter((header) => !(header in rows[0]));
       if (missingHeaders.length) throw new Error(`方案 CSV 缺少字段：${missingHeaders.join("、")}`);
       const errors = [];
+      const ids = new Set();
       const parsed = rows.map((row, index) => {
         const numericKeys = ["investment_cny", "subsidy_cny", "annual_energy_saving_kwh", "annual_om_cny"];
         const missing = required.filter((key) => row[key] === "" || row[key] === undefined);
-        const badNumber = numericKeys.filter((key) => Number.isNaN(Number(row[key])) || Number(row[key]) < 0);
+        const badNumber = numericKeys.filter((key) => !/^[+-]?(?:\d+(?:\.\d*)?|\.\d+)(?:[eE][+-]?\d+)?$/.test(row[key]) || !Number.isFinite(Number(row[key])) || Number(row[key]) < 0);
+        if (!validDate(row.data_date)) badNumber.push("data_date 必须为有效 YYYY-MM-DD 日期");
+        if (ids.has(row.scenario_id)) badNumber.push("scenario_id 重复");
+        ids.add(row.scenario_id);
         if (Number(row.subsidy_cny) > Number(row.investment_cny)) badNumber.push("subsidy_cny 不得大于 investment_cny");
         if (missing.length || badNumber.length) errors.push(`第 ${index + 2} 行：${[...missing, ...badNumber].join("、")}`);
         return {
@@ -730,10 +862,13 @@ function loadOptions(event) {
         };
       });
       if (errors.length) throw new Error(`存在无法测算的记录：${errors.join("；")}`);
+      if (revision !== state.optionsRevision) return;
       state.importedOptions = parsed;
+      invalidateReport();
       $("import-status").textContent = `已导入 ${parsed.length} 项可复核方案。提交报告时将与手动方案一并列出。`;
     })
     .catch((error) => {
+      if (revision !== state.optionsRevision) return;
       state.importedOptions = [];
       $("import-status").textContent = `方案 CSV 未导入：${error.message}`;
     });
@@ -742,8 +877,10 @@ function loadOptions(event) {
 function loadPolicies(event) {
   const file = event.target.files[0];
   if (!file) return;
-  file
-    .text()
+  const revision = ++state.policiesRevision;
+  state.policies = [];
+  invalidateReport();
+  return csvText(file)
     .then(parseCsv)
     .then((rows) => {
       const required = ["policy_id", "region", "policy_name", "conditions", "source_url", "data_date"];
@@ -751,11 +888,16 @@ function loadPolicies(event) {
       if (missingHeaders.length) throw new Error(`政策 CSV 缺少字段：${missingHeaders.join("、")}`);
       const bad = rows.filter((row) => required.some((header) => row[header] === "" || row[header] === undefined));
       if (bad.length) throw new Error("政策 CSV 存在必填字段为空的记录");
+      if (rows.some(row => !validDate(row.data_date))) throw new Error("政策 data_date 必须为有效 YYYY-MM-DD 日期");
+      if (new Set(rows.map(row => row.policy_id)).size !== rows.length) throw new Error("政策 policy_id 不得重复");
+      if (revision !== state.policiesRevision) return;
       state.policies = rows;
+      invalidateReport();
       const prefix = $("import-status").textContent ? `${$("import-status").textContent} ` : "";
       $("import-status").textContent = `${prefix}已导入 ${rows.length} 条政策资料；生成报告后按地区提示候选项。`;
     })
     .catch((error) => {
+      if (revision !== state.policiesRevision) return;
       state.policies = [];
       $("import-status").textContent = `政策 CSV 未导入：${error.message}`;
     });
@@ -764,8 +906,18 @@ function loadPolicies(event) {
 function previewPhotos(event) {
   const area = $("photo-preview");
   area.innerHTML = "";
-  state.photoFiles = [...event.target.files].slice(0, 5);
-  $("analyze-photos").disabled = !state.apiConfigured || state.photoFiles.length === 0;
+  state.photoRevision += 1;
+  $("vision-result").hidden = true;
+  state.photoFiles = [];
+  const files = [...event.target.files];
+  if (files.length > 5 || files.some(file => !["image/jpeg", "image/png", "image/webp", "image/gif"].includes(file.type) || file.size > 10 * 1024 * 1024 || file.size === 0) || files.reduce((total, file) => total + file.size, 0) > 32 * 1024 * 1024) {
+    $("photo-readiness").textContent = "照片未接受：请选择 1–5 张静态 JPG/PNG/WebP/GIF，每张大于 0 且不超过 10 MiB，合计不超过 32 MiB。请先缩图；文件只在本地校验，未上传。";
+    $("analyze-photos").disabled = true;
+    return;
+  }
+  state.photoFiles = files;
+  updateCapabilityHints();
+  $("analyze-photos").disabled = state.visionBusy || !state.apiConfigured || state.photoFiles.length === 0;
   state.photoFiles.forEach((file) => {
     const url = URL.createObjectURL(file);
     const figure = document.createElement("figure");
@@ -773,7 +925,7 @@ function previewPhotos(event) {
     const caption = document.createElement("figcaption");
     image.src = url;
     image.alt = `现场照片预览：${file.name}`;
-    image.onload = () => URL.revokeObjectURL(url);
+    image.onload = image.onerror = () => URL.revokeObjectURL(url);
     caption.textContent = file.name;
     figure.append(image, caption);
     area.append(figure);
@@ -787,14 +939,21 @@ function renderJsonList(value) {
 
 async function analyzePhotos() {
   const area = $("vision-result");
-  if (!state.apiConfigured || state.photoFiles.length === 0) return;
+  if (state.visionBusy || !state.backendReady || !state.apiConfigured || state.photoFiles.length === 0) return;
+  const revision = state.photoRevision;
+  if (!await confirmAction("将所选照片发送云端多模态模型，可能产生费用。请确认已获授权并去除身份、房号等敏感信息。继续吗？")) return;
+  if (revision !== state.photoRevision || !state.photoFiles.length) return;
+  state.visionBusy = true;
+  $("analyze-photos").disabled = true;
+  area.setAttribute("aria-busy", "true");
   area.hidden = false;
   area.className = "agent-output";
   area.textContent = "正在调用多模态 API，仅提取照片中可见信息……";
   const body = new FormData();
   state.photoFiles.forEach((file) => body.append("files", file));
   try {
-    const result = await apiRequest("/api/vision/analyze", { method: "POST", body });
+    const result = await apiRequest("/api/vision/analyze", { method: "POST", body }, 180000);
+    if (revision !== state.photoRevision) return;
     area.innerHTML = `<h3>待人工确认的照片观察</h3>
       <p><strong>外墙：</strong>${escapeHtml(result.facade_material ?? "无法确认")}</p>
       <p><strong>门窗：</strong>${escapeHtml(result.window_type ?? "无法确认")}</p>
@@ -805,20 +964,25 @@ async function analyzePhotos() {
       <p><strong>建议人工核查：</strong></p><ul>${renderJsonList(result.recommended_manual_checks)}</ul>
       <p class="hint">此结果不会自动写入工程参数；面积、传热系数、窗墙比、承载力和价格仍须由真实资料提供。</p>`;
   } catch (error) {
+    if (revision !== state.photoRevision) return;
     area.className = "agent-output error-output";
     area.textContent = `多模态分析未完成：${error.message}`;
+  } finally {
+    state.visionBusy = false;
+    $("analyze-photos").disabled = !state.apiConfigured || !state.backendReady || !state.photoFiles.length;
+    area.setAttribute("aria-busy", "false");
   }
 }
 
 async function ingestRag() {
   if (state.ingestBusy) return;
-  if (!await confirmAction("只同步已核对名单中指纹一致的公开资料；未改动的已入库文档不重复计费。新增或变更内容会发送百炼生成向量，可能产生费用。继续吗？")) return;
+  if (!await confirmAction("只同步已核对名单中指纹一致的公开资料。原文、解析/分块和元数据均一致的已入库文档跳过，新增或变化内容会发送百炼生成向量，可能产生费用。继续吗？")) return;
   const button = $("ingest-rag");
   state.ingestBusy = true;
   button.disabled = true;
   $("mode-note").textContent = "正在核对上传名单、文件指纹并同步资料，请勿关闭页面或重复操作……";
   try {
-    const result = await apiRequest("/api/rag/ingest", { method: "POST" });
+    const result = await apiRequest("/api/rag/ingest", { method: "POST" }, 360000);
     await checkBackend();
     await loadKnowledgeCatalog();
     $("mode-note").textContent = `同步完成：新增或更新 ${result.indexed_documents ?? 0} 份，未变化 ${result.unchanged_documents ?? 0} 份，跳过 ${result.skipped?.length ?? 0} 条。`;
@@ -826,7 +990,7 @@ async function ingestRag() {
     $("mode-note").textContent = `RAG 入库未完成：${error.message}`;
   } finally {
     state.ingestBusy = false;
-    button.disabled = !state.embeddingsConfigured;
+    button.disabled = !state.embeddingsConfigured || !state.backendReady || !state.manifestFound;
   }
 }
 
@@ -841,25 +1005,29 @@ async function askAgent() {
     area.textContent = "请先填写需要核查的问题。";
     return;
   }
+  if (!state.backendReady || !state.apiConfigured || !state.ragReady) { updateCapabilityHints(); area.textContent = $("agent-readiness").textContent; return; }
+  const questionRevision = state.questionRevision;
   const revision = state.revision;
   const button = $("ask-agent");
   state.agentBusy = true;
   button.disabled = true;
   button.textContent = "正在检索与核查…";
   area.setAttribute("aria-busy", "true");
-  area.innerHTML = '<div class="loading-line"><span class="loading-dot"></span>正在检索资料并组织答复，请稍候。不会以预写答案代替 API 响应。</div>';
   try {
+    if (!await confirmAction("将问题、当前项目基线及检索片段发送至配置的百炼向量和模型云端服务，可能产生 API 费用。请确认内容不含密钥、个人身份或未授权资料。继续吗？")) { area.textContent = "已取消咨询，未向云端发送问题或项目资料。"; return; }
+    if (revision !== state.revision || questionRevision !== state.questionRevision || question !== field("agent-question")) { area.textContent = "授权确认期间输入或问题已改变，请按最新内容重新提问。"; return; }
+    area.innerHTML = '<div class="loading-line"><span class="loading-dot"></span>正在检索资料并组织答复，请稍候。不会以预写答案代替 API 响应。</div>';
     const result = await apiRequest("/api/agent/query", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ question, project_context: buildBase(), region: field("region") || null }),
-    });
-    if (revision !== state.revision) { area.textContent = "项目输入已变更，本次旧回答未展示。请按最新输入重新提问。"; return; }
+      body: JSON.stringify({ question, project_context: buildBase(), region: field("region") || null, consent_cloud: true }),
+    }, 180000);
+    if (revision !== state.revision || questionRevision !== state.questionRevision || question !== field("agent-question")) { area.textContent = "项目输入或问题已变更，本次旧回答未展示。请按最新内容重新提问。"; return; }
     const tools = result.tool_results || [];
     area.innerHTML = `<div class="answer-header"><span class="answer-label">AI 决策助手</span><small>${tools.length} 次实际工具调用 · 请人工复核</small></div><div class="answer-body">${ClientUI.markdown(result.answer)}</div><h3 class="sources-heading">检索来源 · 点击核查原文</h3>${ClientUI.citations(result.citations || [])}<details class="tool-trace"><summary>查看实际检索 / 计算记录</summary>${tools.map(t=>`<h4>${escapeHtml(t.tool)}</h4><pre>${escapeHtml(JSON.stringify({arguments:t.arguments,result:t.result},null,2))}</pre>`).join("")}</details>`;
   } catch (error) {
     area.className = "agent-output error-output";
-    area.textContent = revision === state.revision ? `本次咨询未完成：${error.message}。请确认服务余额与网络后重试；未展示替代答案。` : "项目输入已变更，请重新提问。";
+    area.textContent = revision === state.revision && questionRevision === state.questionRevision ? `本次咨询未完成：${error.message}。请确认服务余额与网络后重试；未展示替代答案。` : "项目输入或问题已变更，请重新提问。";
   } finally {
     state.agentBusy = false;
     button.disabled = !(state.apiConfigured && state.ragReady);
@@ -869,8 +1037,10 @@ async function askAgent() {
 }
 
 async function loadKnowledgeCatalog() {
+  if (state.catalogBusy) return;
+  state.catalogBusy = true;
   try {
-    state.catalog = await apiRequest("/api/knowledge/catalog");
+    state.catalog = await apiRequest("/api/knowledge/catalog", {}, 8000);
     const c = state.catalog;
     $("hero-docs").textContent = c.indexed_documents;
     $("hero-chunks").textContent = c.indexed_chunks;
@@ -879,8 +1049,15 @@ async function loadKnowledgeCatalog() {
     $("knowledge-notice").textContent = c.notice + " 私人照片、账单、签章和密钥未批量上传。";
     renderKnowledgeCatalog();
   } catch (error) {
+    state.catalog = null;
+    $("hero-docs").textContent = "—";
+    $("hero-chunks").textContent = "—";
+    $("knowledge-list").textContent = "资料状态读取失败；未继续展示上次的入库状态。";
+    $("knowledge-count").textContent = "当前状态未知，请重新检测。";
     $("library-metrics").textContent = `资料状态读取失败：${error.message}`;
     $("hero-readiness").textContent = "资料状态暂不可用，请检查本地服务。";
+  } finally {
+    state.catalogBusy = false;
   }
 }
 
@@ -902,11 +1079,11 @@ function exportJson() {
   const blob = new Blob([JSON.stringify(state.report, null, 2)], { type: "application/json;charset=utf-8" });
   const link = document.createElement("a");
   link.href = URL.createObjectURL(blob);
-  link.download = `${state.report.dataNature === "assumption" ? "假设情景_" : ""}${state.report.base.projectName}_初步测算报告.json`;
+  link.download = `${state.report.dataNature === "assumption" ? "假设情景_" : "待核验_"}${ClientUI.filename(state.report.base.projectName)}_初步测算报告.json`;
   document.body.append(link);
   link.click();
   link.remove();
-  URL.revokeObjectURL(link.href);
+  setTimeout(() => URL.revokeObjectURL(link.href), 10000);
 }
 
 function exportReadableReport() {
@@ -914,11 +1091,11 @@ function exportReadableReport() {
   const blob = new Blob([ClientUI.reportHtml(state.report)], {type:"text/html;charset=utf-8"});
   const link = document.createElement("a");
   link.href = URL.createObjectURL(blob);
-  link.download = `${state.report.dataNature === "assumption" ? "假设情景_" : ""}${state.report.base.projectName}_初步方案报告.html`;
+  link.download = `${state.report.dataNature === "assumption" ? "假设情景_" : "待核验_"}${ClientUI.filename(state.report.base.projectName)}_初步方案报告.html`;
   document.body.append(link);
   link.click();
   link.remove();
-  setTimeout(() => URL.revokeObjectURL(link.href), 1000);
+  setTimeout(() => URL.revokeObjectURL(link.href), 10000);
 }
 
 function printReport() {
@@ -962,10 +1139,11 @@ $("load-wangyue").addEventListener("click", loadWangyueFields);
 $("load-assumptions").addEventListener("click", loadAssumptions);
 $("clear-case").addEventListener("click", async () => { if (await confirmAction("清空当前未保存的输入、图片及报告？")) resetCase(); });
 $("project-form").addEventListener("input", event => { if (event.target.id !== "agent-question") invalidateReport(); });
+$("agent-question").addEventListener("input", () => { state.questionRevision += 1; if (!state.agentBusy) $("agent-result").hidden = true; });
 $("start-demo").addEventListener("click", loadAssumptions);
 $("knowledge-search").addEventListener("input", renderKnowledgeCatalog);
 $("knowledge-filter").addEventListener("change", renderKnowledgeCatalog);
-document.querySelectorAll("[data-question]").forEach(button => button.addEventListener("click", () => { $("agent-question").value = button.dataset.question; $("agent-question").focus(); }));
+document.querySelectorAll("[data-question]").forEach(button => button.addEventListener("click", () => { state.questionRevision += 1; $("agent-question").value = button.dataset.question; if (!state.agentBusy) $("agent-result").hidden = true; $("agent-question").focus(); }));
 setupToggle("generic-enabled", "generic-fields");
 setupToggle("pv-enabled", "pv-fields");
 checkBackend();

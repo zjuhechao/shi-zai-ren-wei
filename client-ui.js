@@ -5,6 +5,23 @@
   function safeUrl(value) {
     try { const url = new URL(value); return ["https:", "http:"].includes(url.protocol) && !url.username && !url.password ? url.href : ""; } catch { return ""; }
   }
+  function filename(value, fallback = "未命名项目") {
+    const cleaned = String(value ?? "").replace(/[\\/:*?"<>|\u0000-\u001f\u007f]/g, "_").replace(/[.\s]+$/g, "").trim();
+    const short = Array.from(cleaned).slice(0, 80).join("");
+    return !short ? fallback : /^(?:con|prn|aux|nul|com[1-9]|lpt[1-9])(?:\.|$)/i.test(short) ? `_${short}` : short;
+  }
+  function apiError(detail, status) {
+    if (typeof detail === "string" && detail.trim()) return detail;
+    if (Array.isArray(detail)) {
+      const messages = detail.slice(0, 4).map(item => {
+        if (typeof item === "string") return item;
+        const field = Array.isArray(item?.loc) ? item.loc.filter(v => v !== "body").join(".") : "";
+        return `${field ? field + "：" : ""}${item?.msg || "输入未通过校验"}`;
+      });
+      if (messages.length) return messages.join("；") + (detail.length > 4 ? "；其余字段请核对输入" : "");
+    }
+    return `请求失败（${status}），请检查输入和服务状态`;
+  }
   function inline(value) {
     return escape(value).replace(/`([^`]+)`/g, "<code>$1</code>").replace(/\*\*([^*]+)\*\*/g, "<strong>$1</strong>");
   }
@@ -56,7 +73,7 @@
       "敏感性上下浮动范围为情景假设，不是预测置信区间。"
     ];
   }
-  const api = { escape, safeUrl, markdown, citations, reportHtml, currentAssumptions };
+  const api = { escape, safeUrl, filename, apiError, markdown, citations, reportHtml, currentAssumptions };
   if (typeof module !== "undefined") module.exports = api;
   root.ClientUI = api;
 })(typeof window === "undefined" ? globalThis : window);

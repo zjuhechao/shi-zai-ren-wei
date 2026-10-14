@@ -2,14 +2,15 @@ from __future__ import annotations
 
 from typing import Any
 
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, ConfigDict, Field, field_validator
+from .safety import reject_credentials, validate_context
 
 
 class GenericScenarioRequest(BaseModel):
-    model_config = ConfigDict(allow_inf_nan=False)
+    model_config = ConfigDict(allow_inf_nan=False, extra="forbid", strict=True, str_max_length=500, str_strip_whitespace=True)
 
-    scenario_id: str
-    scenario_name: str
+    scenario_id: str = Field(min_length=1, max_length=120)
+    scenario_name: str = Field(min_length=1, max_length=120)
     investment_cny: float = Field(ge=0)
     subsidy_cny: float = Field(ge=0)
     annual_energy_saving_kwh: float = Field(ge=0)
@@ -23,7 +24,7 @@ class GenericScenarioRequest(BaseModel):
 
 
 class PvScenarioRequest(BaseModel):
-    model_config = ConfigDict(allow_inf_nan=False)
+    model_config = ConfigDict(allow_inf_nan=False, extra="forbid", strict=True, str_max_length=500, str_strip_whitespace=True)
 
     capacity_kwp: float = Field(ge=0)
     annual_yield_kwh_per_kwp: float = Field(ge=0)
@@ -41,9 +42,24 @@ class PvScenarioRequest(BaseModel):
 
 
 class AgentQueryRequest(BaseModel):
+    model_config = ConfigDict(extra="forbid", str_strip_whitespace=True)
+
     question: str = Field(min_length=2, max_length=4000)
     project_context: dict[str, Any] = Field(default_factory=dict)
-    region: str | None = None
+    region: str | None = Field(default=None, max_length=120)
+    consent_cloud: bool = Field(default=False, strict=True)
+
+    @field_validator("question", "region")
+    @classmethod
+    def no_credentials(cls, value):
+        if value is not None:
+            reject_credentials(value)
+        return value
+
+    @field_validator("project_context")
+    @classmethod
+    def bounded_context(cls, value):
+        return validate_context(value)
 
 
 class AgentQueryResponse(BaseModel):

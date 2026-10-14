@@ -72,7 +72,7 @@ class PlanReportTests(unittest.TestCase):
         for field in ['projectName','region','electricityPriceSource','electricityPriceUrl','carbonSource','carbonUrl']:
             data=payload();data['base'][field]=' \u00a0\u3000\u200b\ufeff '
             with self.subTest(field=field), patch('app.main.get_agent') as agent:
-                self.assertEqual(TestClient(app).post('/api/reports/plan',json=data).status_code,422)
+                self.assertEqual(TestClient(app, base_url="http://127.0.0.1").post('/api/reports/plan',json=data).status_code,422)
                 agent.assert_not_called()
 
     def test_optional_plan_text_may_be_empty(self):
@@ -111,7 +111,7 @@ class PlanReportTests(unittest.TestCase):
     def test_no_cloud_without_consent(self):
         data=payload();data['consent_cloud']=False
         with patch('app.main.get_agent') as agent:
-            self.assertEqual(TestClient(app).post('/api/reports/plan',json=data).status_code,422)
+            self.assertEqual(TestClient(app, base_url="http://127.0.0.1").post('/api/reports/plan',json=data).status_code,422)
             agent.assert_not_called()
 
     def test_empty_retrieval_never_uses_fake_report(self):
@@ -138,7 +138,7 @@ class PlanReportTests(unittest.TestCase):
                 self.assertIn(term,text)
 
     def test_private_audit_not_public(self):
-        self.assertEqual(TestClient(app).get('/storage/reports/123.json').status_code,404)
+        self.assertEqual(TestClient(app, base_url="http://127.0.0.1").get('/storage/reports/123.json').status_code,404)
 
     def test_invalid_model_output_stops_after_two_attempts(self):
         agent=fake_agent();agent.client.responses.create.return_value=SimpleNamespace(output=[],id='test')
@@ -147,18 +147,18 @@ class PlanReportTests(unittest.TestCase):
 
     def test_pdf_endpoint_returns_pdf_and_private_audit(self):
         with tempfile.TemporaryDirectory() as folder, patch('app.main.PROJECT_ROOT',Path(folder)), patch('app.main.get_agent',return_value=fake_agent()):
-            response=TestClient(app).post('/api/reports/plan',json=payload())
+            response=TestClient(app, base_url="http://127.0.0.1").post('/api/reports/plan',json=payload())
             self.assertEqual(response.status_code,200)
             self.assertTrue(response.content.startswith(b'%PDF-'))
             self.assertIn('application/pdf',response.headers['content-type'])
             self.assertEqual(response.headers['cache-control'],'no-store')
             record=Path(folder)/'storage/reports'/f"{response.headers['x-report-id']}.json"
             self.assertTrue(record.is_file())
-            self.assertEqual(TestClient(app).get('/storage/reports/'+record.name).status_code,404)
+            self.assertEqual(TestClient(app, base_url="http://127.0.0.1").get('/storage/reports/'+record.name).status_code,404)
 
     def test_generation_failure_releases_lock_and_redacts_error(self):
         with patch('app.main.get_agent',return_value=fake_agent()), patch('app.plan_service.generate_plan',side_effect=RuntimeError('sk-'+'x'*32)):
-            client=TestClient(app)
+            client=TestClient(app, base_url="http://127.0.0.1")
             for _ in range(2):
                 response=client.post('/api/reports/plan',json=payload())
                 self.assertEqual(response.status_code,400)

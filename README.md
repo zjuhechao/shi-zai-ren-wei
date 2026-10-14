@@ -1,6 +1,6 @@
-# 室在人为 v0.6.1 源码运行说明
+# 室在人为 v0.6.2 源码运行说明
 
-软件 API 版本为 v0.6.1，本次材料与应用分发修订为 r3（2026-10-14）。项目使用 FastAPI、DeepSeek Responses API 工具调用、百炼兼容文本向量接口、本地 Chroma 与 Python 确定性测算，输出完整前期改造与分析方案 PDF。源码、应用包和提交材料共用同一运行逻辑；不以关键词、静态回答或前端演算冒充真实 RAG。历史测试与原云端记录保留原时点，r3 不代表重新调用模型生成示范报告。
+软件 API 版本为 v0.6.2，资料与应用分发修订为 r4（2026-10-14）。项目使用 FastAPI、DeepSeek Responses API 工具调用、百炼兼容文本向量接口、本地 Chroma 与 Python 确定性测算，输出完整前期改造与分析方案 PDF。新版本加强请求和工具校验、向量响应检查、网页超时与过时结果保护，以及下载配置诊断；原技术路线不变。青禾固定方案保留原生成与复核历史，没有重新调用模型。
 
 当前公开源码地址为 [zjuhechao/shi-zai-ren-wei](https://github.com/zjuhechao/shi-zai-ren-wei)，按团队要求提供校赛公开链接。公开仓库可直接下载，不需要邀请；下文的私有仓库权限提示只适用于今后改为私有的情况。仓库未另行授予开源许可证，公开可见不等于授权任意复用；团队代码权属和第三方资料使用边界仍须确认。仓库是否完成上传以页面实际文件和提交为准。
 
@@ -8,7 +8,7 @@
 
 ## 获取应用或完整源码
 
-普通使用者可[下载 Windows 本地应用包](https://github.com/zjuhechao/shi-zai-ren-wei/raw/refs/heads/main/downloads/app-windows-v0.6.1.zip)，完整解压后查看“开始使用.html”，运行 `start-app.bat`。这是源码型本地应用，仍需 Windows x64 Python 3.12 和首次联网安装依赖，不是免安装 EXE，也不是托管公网后端。包内有前后端、配置向导、三份公开样本、固定示范 PDF 和逐文件指纹；不含 Python 运行时、团队 Key、原向量库、开发测试或 Docker。
+普通使用者可[下载 Windows 本地应用包](https://github.com/zjuhechao/shi-zai-ren-wei/raw/refs/heads/main/downloads/app-windows-v0.6.2.zip)，完整解压后查看“开始使用.html”，运行 `start-app.bat`。这是源码型本地应用，仍需 Windows x64 Python 3.12 和首次联网安装依赖，不是免安装 EXE，也不是托管公网后端。包内有前后端、配置向导、三份公开样本、固定示范 PDF 和逐文件指纹；不含 Python 运行时、团队 Key、原向量库、开发测试或 Docker。
 
 开发者使用 **Code → Download ZIP** 或 `git clone https://github.com/zjuhechao/shi-zai-ren-wei.git` 获取完整仓库。完整仓库另含测试、Docker备用配置及应用打包脚本；`downloads` 中的应用 ZIP 是公开分发资产，不是私人交付包。构建方式见 [应用分发说明](downloads/README.md)。普通下载者不需要安装 Git、Node 或 GPU。
 
@@ -25,7 +25,7 @@ Python 3.12.14 是本次实际验收的运行时，不存在该版的传统官�
 
 ## 首次运行：Windows / Python 3.12
 
-推荐 Windows x64、Python 3.12。本版实际验收环境为 Python 3.12.14；Windows 3.12 使用 `backend/requirements-lock.windows-py312.txt` 锁定直接及传递依赖。其他系统或 Python 版本使用 10 项直接依赖的 `backend/requirements.txt`，未把 Windows 测试视为跨平台验证。Node.js 仅用于前端测试，日常网页运行不需要 Node。
+推荐 Windows x64、Python 3.12。本版实际验收环境为 Python 3.12.14；Windows 3.12 使用 `backend/requirements-lock.windows-py312.txt` 锁定直接及传递依赖。其他系统或 Python 版本使用 11 项直接依赖的 `backend/requirements.txt`，其中 Pillow 用于检查图片真实格式和尺寸，原完整锁文件已包含它。其他环境需额外验收；Node.js 仅用于前端测试，日常网页运行不需要 Node。
 
 双击 `启动演示.bat`，或在项目根目录执行：
 
@@ -45,7 +45,7 @@ powershell -NoProfile -ExecutionPolicy Bypass -File .\启动演示.ps1 -PythonPa
 powershell -NoProfile -ExecutionPolicy Bypass -File .\启动演示.ps1 -IndexUrl https://mirrors.zju.edu.cn/pypi/web/simple -Port 18061
 ```
 
-脚本首次创建 `.venv` 和空白 `backend/.env`，按选中的依赖文件指纹判断是否安装。已有同类服务占用端口时，只显示该服务的网址和版本，不会停止它；使用 `-Port 18061` 可以运行独立副本。若其他程序占用端口则明确报错。命令行窗口显示实际网页地址，关闭该窗口停止本副本；批处理正常退出后也保留提示。
+脚本首次创建 `.venv` 和空白 `backend/.env`，根据依赖文件指纹和导入/依赖检查决定是否安装或修复。已有同类服务占用端口时，只显示该服务的网址和版本，不会停止它；使用 `-Port 18061` 可以运行独立副本。若其他程序占用端口则明确报错。命令行窗口显示实际网页地址，关闭该窗口停止本副本；批处理正常退出后也保留提示。
 
 也可手动运行（有 Python Launcher 时）：
 
@@ -107,11 +107,11 @@ node backend\tests\test_case_prefill.cjs
 
 验收服务位于 `http://127.0.0.1:18061`，返回 v0.6.1、3 份公开样本、0 个已索引向量且无密钥。本轮没有新增云端调用；这些检查不代表模型准确率、云端联通率或另一台电脑部署成功率。
 
-Windows 默认使用系统微软雅黑。Linux 可通过 `REPORT_FONT_PATH` 指向可用且合法的中文 TTF/TTC，并重新检查 PDF 排版。Docker 配置使用 Python 3.12、10 项直接依赖、文泉驿字体与固定报告资产；公开资料只读挂载到 `/app/数据收集包`，Chroma 独立持久化。本机未安装 Docker，当前只审查配置，不声称完成 Linux 构建或远程验收。公网使用还需要鉴权、HTTPS、配额、费用与数据保护专项实现。
+Windows 默认使用系统微软雅黑。Linux 可通过 `REPORT_FONT_PATH` 指向可用且合法的中文 TTF/TTC，并重新检查 PDF 排版。Docker 配置使用 Python 3.12、11 项直接依赖、文泉驿字体与固定报告资产；公开资料只读挂载到 `/app/数据收集包`，Chroma 独立持久化。本机未安装 Docker，当前只审查配置，不声称完成 Linux 构建或远程验收。公网使用还需要鉴权、HTTPS、配额、费用与数据保护专项实现；本版 Host 保护只允许回环访问，不直接作为公开网站使用。
 
 ## 下载配置的专题检查
 
-下载配置增强修订在原有53项核心业务测试之外，另提供21项配置向导检查。该检查只使用假测试输入，不读取已有密钥、不调用云API；它验证地址校验、隐藏输入、取消不覆盖、原子保存和正确服务绑定。增强修订只改变本机配置入口和使用文档，核心API、前端、计算和PDF资产仍与上述已验收发布一致。两套测试范围分开记录，不把它们当模型准确率或异机部署成功率。
+配置专题检查只使用假测试输入，验证地址校验、隐藏输入、取消不覆盖、原子保存和正确服务绑定；不读取团队密钥或调用云端。历史 v0.6.1 的 21 项检查保留原日期；v0.6.2 增加配置解析和保存保护，与本版核心业务/前端测试分别记录。测试数量不代表模型准确率或异机部署成功率。
 
 ```powershell
 .\.venv\Scripts\python.exe -S backend\tests\configuration_checks.py -v
@@ -119,7 +119,21 @@ Windows 默认使用系统微软雅黑。Linux 可通过 `REPORT_FONT_PATH` 指�
 
 本地配置向导只需Python标准库，因此首次配置不需要已安装全部项目依赖。填完密钥与地址仍需彻底重启服务，并按教程明确选择在线检查和知识入库；没有密钥或索引不能生成新的智能方案。
 
-## r3 分发核验范围
+## v0.6.2 本轮完善
+
+84 项后端、127 个前端断言、46 项配置／分发检查及 31 项独立无 Key 实际 HTTP 检查通过，范围分别记录，不相加为模型准确率。浏览器实测输入变更、重新计算、未配置提示及固定 PDF 下载；窄屏上传控件溢出已修复。详见 [本轮完善与验收](docs/完善与验收_v0.6.2.md) 和 [更新记录](CHANGELOG.md)。本轮复用既有 95 包运行时，没有新增付费 API 调用或自动重建私有库。
+
+## v0.6.2 交互和处理边界
+
+网页为状态检测、计算、咨询、照片、入库及完整 PDF 设置不同超时；按钮处理中阻止重复请求，项目、问题、照片或 CSV 改变后不展示旧操作的迟到结果。超时只结束浏览器等待，云端任务可能仍继续并产生费用，不会自动重试。未保存输入留在当前浏览器页面；导出的 JSON/HTML 含项目资料，应保留私有。
+
+CSV 导入最多每文件 2 MiB / 500 条，要求规范表头、引号、有效日期、有限非负数和唯一方案 ID。后端在云端前检查输入边界及疑似凭据，验证模型工具参数和向量返回值。照片检查格式/字节不构成识别效果验收，模型引用校验也不能替代专业审查。新完整方案仍必须具备本人 API、真实 Chroma 资料和严格布尔云端处理同意。SDK 不做隐式传输重试；方案结构生成最多两次（首次加一次纠错）。
+
+入库只有在原文、实际块正文和元数据均一致时才跳过；解析、切分或元数据变化可能重新向量化并计费。升级不会自动重建原私有库。Windows 入口拒绝非回环监听；容器内部通配监听须显式开启，宿主仍仅发布回环端口，Docker 尚未实际构建验收。
+
+`check_readiness.py` 的离线检查只报告代码与本机依赖准备情况，不能把总体 PASS 当作云端 API 或新智能 PDF 已验收。客户演示诊断默认离线；确实同意发送假设输入并承担调用费用时，才显式执行 `backend/scripts/verify_customer_demo.py --online`。
+
+## r4 分发核验范围
 
 `application_manifest.sha256.json` 位于应用包内，记录必要运行文件和包装入口的字节指纹，不对自身取指纹；源码清单 `release_files.sha256.json` 另记录完整仓库。应用构建仅选择白名单文件，不递归复制 `downloads`，不读取 `.env`、`.venv` 或 `storage`。本次分发检查与前述 10 月 13 日基础验收分开记录，不把本机解压运行当作另一台电脑安装、模型准确率或新的付费 API 联调。
 
@@ -132,7 +146,7 @@ Windows 默认使用系统微软雅黑。Linux 可通过 `REPORT_FONT_PATH` 指�
 在随包 bundle 所在目录运行以下命令，可恢复源码与当前发布历史到一个不存在的新文件夹。关闭自动换行转换是为了与发布指纹进行同字节核对：
 
 ```powershell
-git -c core.autocrlf=false clone ".\室在人为_v0.6.1_当前发布历史.bundle" ".\恢复源码"
+git -c core.autocrlf=false clone ".\室在人为_v0.6.2_当前发布历史.bundle" ".\恢复源码"
 ```
 
-旧版主工程 README、旧交付 PDF、旧技术说明与架构图已移出当前源码工作树，另存为历史追溯资料；当前说明和架构位于 `docs/技术说明_v0.6.1.pdf` 与 `docs/技术架构_v0.6.1.svg`，本页是此版运行依据。旧资料仍可通过历史追溯目录或 Git 历史恢复，不应混入当前运行资产或冒充当前验收。
+旧版主工程 README、旧交付 PDF、旧技术说明与架构图已移出当前源码工作树，另存为历史追溯资料；当前说明和架构位于 `docs/技术说明_v0.6.2.pdf` 与 `docs/技术架构_v0.6.2.svg`，本页是此版运行依据。旧资料仍可通过历史追溯目录或 Git 历史恢复，不应混入当前运行资产或冒充当前验收。

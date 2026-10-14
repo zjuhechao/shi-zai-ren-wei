@@ -38,7 +38,7 @@ class ProjectReadinessTests(unittest.TestCase):
 
     def test_agent_endpoint_stops_when_knowledge_is_unavailable(self) -> None:
         with patch("app.main.get_knowledge_base", side_effect=RuntimeError("RAG not configured")):
-            response = TestClient(app).post("/api/agent/query", json={"question": "test", "project_context": {}})
+            response = TestClient(app, base_url="http://127.0.0.1").post("/api/agent/query", json={"question": "test", "project_context": {}, "consent_cloud": True})
         self.assertEqual(response.status_code, 400)
         self.assertIn("RAG not configured", response.json()["detail"])
 
@@ -75,14 +75,14 @@ class ProjectReadinessTests(unittest.TestCase):
             asset.parent.mkdir(parents=True)
             asset.write_bytes((PROJECT_ROOT / 'assets' / 'reports' / 'qinghe_plan_demo.pdf').read_bytes())
             with patch('app.main.PROJECT_ROOT', root):
-                response = TestClient(app).get('/api/demo/plan.pdf')
+                response = TestClient(app, base_url="http://127.0.0.1").get('/api/demo/plan.pdf')
                 self.assertEqual(response.status_code, 200)
                 self.assertTrue(response.content.startswith(b'%PDF-'))
-                self.assertEqual(TestClient(app).get('/assets/reports/qinghe_plan_demo.pdf').status_code, 404)
+                self.assertEqual(TestClient(app, base_url="http://127.0.0.1").get('/assets/reports/qinghe_plan_demo.pdf').status_code, 404)
             self.assertFalse((root / '04_完整方案交付_v0.6').exists())
 
     def test_public_routes_and_deterministic_calculator(self) -> None:
-        client = TestClient(app)
+        client = TestClient(app, base_url="http://127.0.0.1")
         health = client.get("/api/health")
         self.assertEqual(health.status_code, 200)
         self.assertTrue(health.json()["manifest_found"])

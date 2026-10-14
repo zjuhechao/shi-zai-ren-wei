@@ -5,6 +5,7 @@ import os
 from pathlib import Path
 from urllib.request import Request, urlopen
 from urllib.error import HTTPError
+from urllib.parse import urlparse
 
 BASE = "http://127.0.0.1:" + os.getenv("APP_PORT", "8000")
 
@@ -18,7 +19,19 @@ def main():
     global BASE
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--base-url", default=BASE, help="Locally reachable app URL, e.g. http://127.0.0.1:18000")
+    parser.add_argument("--online", action="store_true", help="Explicitly permit billable AI calls using the locally configured accounts")
     args = parser.parse_args()
+    if not args.online:
+        parser.error("This live test calls cloud AI and may incur charges. Re-run with --online only after authorizing those calls. No requests were made.")
+    parsed = urlparse(args.base_url)
+    if (parsed.scheme != "http" or parsed.hostname not in {"127.0.0.1", "localhost", "::1"}
+            or parsed.username or parsed.password or parsed.query or parsed.fragment or parsed.path not in {"", "/"}):
+        parser.error("--base-url must be a local loopback HTTP address with no credentials or extra request path")
+    try:
+        if parsed.port is not None and not 1 <= parsed.port <= 65535:
+            raise ValueError("Invalid port")
+    except ValueError:
+        parser.error("Invalid local port")
     BASE = args.base_url.rstrip("/")
     catalog = request("/api/knowledge/catalog")
     print(json.dumps({k:catalog[k] for k in ("total","indexed_documents","indexed_chunks","blocked_documents")}, ensure_ascii=False), flush=True)
@@ -31,7 +44,7 @@ def main():
     output.parent.mkdir(parents=True, exist_ok=True)
     for check in checks:
         try:
-            result = request("/api/agent/query", {"question":check["question"],"project_context":check["context"],"region":"浙江省 杭州市"})
+            result = request("/api/agent/query", {"question":check["question"],"project_context":check["context"],"region":"浙江省 杭州市","consent_cloud":True})
         except HTTPError as exc:
             result = {"answer":"", "tool_results":[], "error":exc.read().decode("utf-8")}
         calls = result.get("tool_results", [])

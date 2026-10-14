@@ -16,15 +16,15 @@ from scripts.configure_secrets import update_env_text, validate_embedding_url
 
 class DeliveryV04Tests(unittest.TestCase):
     def test_assumption_fixture_cannot_claim_to_be_actual_evidence(self):
-        data = TestClient(app).get("/api/demo/assumptions").json()
+        data = TestClient(app, base_url="http://127.0.0.1").get("/api/demo/assumptions").json()
         self.assertEqual(data["data_nature"], "assumption")
         self.assertIn("不是望月公寓", data["notice"])
         self.assertTrue(data["fields"]["generic-url"].startswith("assumption:"))
-        actual = TestClient(app).get("/api/demo/case").json()
+        actual = TestClient(app, base_url="http://127.0.0.1").get("/api/demo/case").json()
         self.assertNotIn("annual_electricity_kwh", actual["safe_prefill"])
 
     def test_sensitivity_is_explicit_and_arithmetically_correct(self):
-        response = TestClient(app).post("/api/calculate/sensitivity", json={
+        response = TestClient(app, base_url="http://127.0.0.1").post("/api/calculate/sensitivity", json={
             "scenario_id": "test", "scenario_name": "assumption",
             "investment_cny": 60000, "subsidy_cny": 0, "annual_energy_saving_kwh": 12000,
             "electricity_price_cny_per_kwh": 0.538, "carbon_factor_kgco2e_per_kwh": 0.5,
@@ -166,7 +166,7 @@ class DeliveryV04Tests(unittest.TestCase):
             self.assertNotIn("UNIT_TEST_SECRET", _public_error(RuntimeError("Invalid UNIT_TEST_SECRET")))
 
     def test_cross_site_writes_are_rejected(self):
-        response = TestClient(app).post("/api/rag/ingest", headers={"Origin": "https://untrusted.example"})
+        response = TestClient(app, base_url="http://127.0.0.1").post("/api/rag/ingest", headers={"Origin": "https://untrusted.example"})
         self.assertEqual(response.status_code, 403)
 
 

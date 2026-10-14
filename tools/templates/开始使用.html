@@ -9,7 +9,7 @@
 </style>
 </head>
 <body><main>
-<header><div class="tag">SHI ZAI REN WEI · WINDOWS LOCAL APPLICATION</div><h1>把完整方案带到你的电脑</h1><p>应用分发整理版 r3 · 2026-10-14；软件 API 版本保持 v0.6.1。先体验 Python 测算与固定假设方案，再按需配置自己的 API，建立真实 RAG 并生成新 PDF。</p></header>
+<header><div class="tag">SHI ZAI REN WEI · WINDOWS LOCAL APPLICATION</div><h1>把完整方案带到你的电脑</h1><p>应用分发整理版 r4 · 2026-10-14；软件 API 版本 v0.6.2。先体验 Python 测算与固定假设方案，再按需配置自己的 API，建立真实 RAG 并生成新 PDF。</p></header>
 <section class="note"><h2>先明确你下载的是什么</h2><p>这是<strong>源码型本地应用包</strong>，需要 Windows 64 位 Python 3.12，首次联网安装依赖；不是免安装 EXE，不是已经部署的公网服务。没有团队密钥、原机向量库、私人账单或签章。默认只监听本机。</p></section>
 <div class="grid">
 <section><h2>01 · 不花 API 费用，先看产品</h2><ol><li>右键 ZIP → <strong>全部解压</strong>，放入自己的可写目录。不要在 ZIP 预览中启动。</li><li>准备 Python 3.12（64 位）。安装方法见完整教程。</li><li>双击 <code>start-app.bat</code>，首次等待依赖安装。</li><li>保持启动窗口打开，看到 <code>Open http://… in your browser</code> 后打开该地址。默认 <code>http://127.0.0.1:8000/</code>。</li><li>载入“假设情景演示”并计算，查看比选、敏感性分析及 Python 结果。</li><li>点击“下载青禾示范方案 PDF”。它是固定假设案例，不随输入改变。</li></ol><p class="small">不要直接双击 index.html；file:// 页面不表示后端已启动。依赖安装失败时也不表示应用已启动。</p></section>
@@ -20,5 +20,5 @@ powershell -NoProfile -ExecutionPolicy Bypass -File .\start-app.ps1 -PythonPath 
 powershell -NoProfile -ExecutionPolicy Bypass -File .\start-app.ps1 -IndexUrl https://mirrors.zju.edu.cn/pypi/web/simple -Port 18061</pre><p>选择 <code>-Port 18061</code> 时打开 <code>http://127.0.0.1:18061/</code>，以窗口实际显示为准。端口占用时选其他空闲端口，不要停止其他项目服务；镜像参数仅本次有效，不更改全局 pip 设置。</p></section>
 <section><h2>体验与工程结论之间的边界</h2><ul><li>无 Key、无向量库时，新智能方案和 RAG 不会假装成功；本地测算与固定示范 PDF 仍能使用。</li><li>青禾是假设案例，不能视作望月公寓真实收益。真实项目需补齐账单、报价、工程量、节能依据与授权。</li><li>三份公开资料只是小型流程演示库，不是充分的住宅改造依据，也不包含固定青禾示范 PDF 历史引用的全部标准。新结果不保证与固定 PDF 相同。</li><li>其他电脑不能访问你的 127.0.0.1 地址，应各自下载运行。公网部署另需鉴权、HTTPS、配额与数据保护。</li><li>本包不含开发测试和 Docker 文件；开发和二次修改请下载完整源码。</li></ul></section>
 <section><h2>继续阅读</h2><p><a href="开始使用.txt">纯文字快速指南</a> · <a href="docs/下载后运行与配置.md">完整下载与配置教程</a> · <a href="docs/数据与材料收集清单.md">数据与材料清单</a> · <a href="https://github.com/zjuhechao/shi-zai-ren-wei">公开 GitHub 源码</a></p><p class="small">Markdown 文件可用文本编辑器查看。文件指纹在 application_manifest.sha256.json；清单不哈希自身，避免循环引用。</p></section>
-<footer>打包核验检查文件完整性、指纹、解析、入口与无密钥离线逻辑；不把这些检查称为新的付费 API 测试或另一台电脑安装验收。方案仍须专业复核。</footer>
+<footer>启动器会复查锁定依赖的版本与可导入性；无密钥就绪检查的 PASS 仅代表本地演示通过，不代表云 API、真实 RAG、照片或新智能 PDF 已验收。打包核验不替代付费 API 测试或另一台电脑安装验收。方案仍须专业复核。</footer>
 </main></body></html>

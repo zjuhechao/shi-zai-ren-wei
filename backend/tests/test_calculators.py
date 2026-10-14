@@ -48,7 +48,7 @@ class CalculatorTests(unittest.TestCase):
                                      "annual_yield_kwh_per_kwp": 2})
 
     def test_api_rejects_overflowing_json_number_without_500(self) -> None:
-        client = TestClient(app)
+        client = TestClient(app, base_url="http://127.0.0.1")
         for route, fixture, field in (("generic", GENERIC_INPUT, "investment_cny"),
                                       ("pv", PV_INPUT, "capacity_kwp")):
             body = json.dumps({**fixture, field: "OVERFLOW"}).replace('"OVERFLOW"', "1e309")
@@ -60,7 +60,7 @@ class CalculatorTests(unittest.TestCase):
                 self.assertTrue(all("input" not in error for error in response.json()["detail"]))
 
     def test_api_returns_bad_input_for_computation_overflow(self) -> None:
-        client = TestClient(app)
+        client = TestClient(app, base_url="http://127.0.0.1")
         for route, payload in (
             ("generic", {**GENERIC_INPUT, "annual_energy_saving_kwh": 1e308, "electricity_price_cny_per_kwh": 2}),
             ("pv", {**PV_INPUT, "capacity_kwp": 1e308, "annual_yield_kwh_per_kwp": 2}),
