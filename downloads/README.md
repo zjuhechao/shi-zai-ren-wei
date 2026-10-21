@@ -1,6 +1,6 @@
 # 室在人为 Windows 本地应用下载
 
-软件 API v0.6.2，应用及资料分发 r4（2026-10-14）。[下载应用 ZIP](https://github.com/zjuhechao/shi-zai-ren-wei/raw/refs/heads/main/downloads/app-windows-v0.6.2.zip)，右键“全部解压”，查看“开始使用.html”，双击 `start-app.bat`。
+软件 API v0.6.2，应用及资料分发 r4（2026-10-21 校赛前最终版）。[下载应用 ZIP](https://github.com/zjuhechao/shi-zai-ren-wei/raw/refs/heads/main/downloads/app-windows-v0.6.2.zip)，右键“全部解压”，查看“开始使用.html”，双击 `start-app.bat`。
 
 应用需要 Windows x64 Python 3.12，首次联网安装依赖。它是源码型本地网页应用，不是免安装 EXE，也没有托管公网后端。无 Key 可测算和下载固定假设 PDF；新智能方案需个人 DeepSeek、百炼账号和真实入库，不内置团队 Key。完整配置见包内 `docs/下载后运行与配置.md`。
 

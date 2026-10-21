@@ -8,6 +8,7 @@ import warnings
 from functools import lru_cache
 
 from fastapi import FastAPI, File, HTTPException, UploadFile, Request
+from fastapi.concurrency import run_in_threadpool
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
 from fastapi.responses import FileResponse
@@ -249,7 +250,9 @@ async def analyze_images(files: list[UploadFile] = File(...)) -> dict:
     if not _cloud_lock.acquire(blocking=False):
         raise HTTPException(status_code=409, detail="已有智能任务执行中，请等待完成")
     try:
-        return get_agent().analyze_images(images)
+        # 照片分析内含最长 90 秒的同步网络调用；若在事件循环内直接执行会阻塞
+        # 全部请求（含 /api/health）。移入线程池，保持其他接口可响应。
+        return await run_in_threadpool(get_agent().analyze_images, images)
     except Exception as exc:
         raise HTTPException(status_code=400, detail=_public_error(exc)) from exc
     finally:
@@ -307,6 +310,21 @@ def frontend_script() -> FileResponse:
 @app.get("/styles.css", include_in_schema=False)
 def frontend_styles() -> FileResponse:
     return FileResponse(PROJECT_ROOT / "styles.css", media_type="text/css; charset=utf-8")
+
+
+@app.get("/ux.css", include_in_schema=False)
+def frontend_ux_styles() -> FileResponse:
+    return FileResponse(PROJECT_ROOT / "ux.css", media_type="text/css; charset=utf-8")
+
+
+@app.get("/ux.js", include_in_schema=False)
+def frontend_ux_script() -> FileResponse:
+    return FileResponse(PROJECT_ROOT / "ux.js", media_type="application/javascript; charset=utf-8")
+
+
+@app.get("/charts.js", include_in_schema=False)
+def frontend_charts_script() -> FileResponse:
+    return FileResponse(PROJECT_ROOT / "charts.js", media_type="application/javascript; charset=utf-8")
 
 
 @app.get("/client-ui.js", include_in_schema=False)

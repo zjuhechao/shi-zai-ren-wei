@@ -8,7 +8,9 @@
       content="既有建筑低碳改造智能决策体的本地可交互原型"
     />
     <title>室在人为 | 低碳改造智能决策体</title>
-    <link rel="stylesheet" href="styles.css?v=0.6.2-r4.1" />
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%23007a78'/%3E%3Cpath d='M8 21 L14 11 L18 17 L21 13 L25 21' stroke='%23b9efd6' stroke-width='2.5' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E" />
+    <link rel="stylesheet" href="styles.css?v=0.6.2-r4.2" />
+    <link rel="stylesheet" href="ux.css?v=0.6.2-r4.2" />
   </head>
   <body>
     <a class="skip-link" href="#project-heading">跳到项目录入</a>
@@ -33,6 +35,10 @@
       </nav>
 
       <section class="intro client-hero" aria-labelledby="intro-heading">
+        <div class="hero-glow" aria-hidden="true"></div>
+        <div class="hero-orb hero-orb-a" aria-hidden="true"></div>
+        <div class="hero-orb hero-orb-b" aria-hidden="true"></div>
+        <div class="hero-grid-lines" aria-hidden="true"></div>
         <div><p class="hero-kicker">让每一项改造决策，都有据可查</p>
           <h2 id="intro-heading">从建筑现状，<br>到可复核的低碳方案。</h2>
           <p class="hero-description">查政策、核数据、比方案。公开资料检索与确定性计算相结合，让依据、假设和缺口清晰可见。</p>
@@ -42,6 +48,20 @@
         <div class="hero-console"><div class="console-top"><span class="pulse-dot"></span><span>本地知识工作台</span><small>可追溯</small></div>
           <div class="hero-metrics"><div><strong id="hero-docs">—</strong><span>已入库资料</span></div><div><strong id="hero-chunks">—</strong><span>真实向量片段</span></div></div>
           <div class="console-flow"><span>公开文件</span><i>→</i><span>来源检索</span><i>→</i><span>辅助决策</span></div>
+          <div class="hero-spark" aria-hidden="true">
+            <svg viewBox="0 0 260 56" preserveAspectRatio="none" role="img" aria-hidden="true">
+              <defs>
+                <linearGradient id="heroSparkFill" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stop-color="#8fe3c4" stop-opacity="0.35"/>
+                  <stop offset="100%" stop-color="#8fe3c4" stop-opacity="0"/>
+                </linearGradient>
+              </defs>
+              <path class="hero-spark-area" d="M0,48 L28,42 L56,44 L84,36 L112,38 L140,28 L168,30 L196,20 L224,22 L260,12 L260,56 L0,56 Z" fill="url(#heroSparkFill)"/>
+              <path class="hero-spark-line" d="M0,48 L28,42 L56,44 L84,36 L112,38 L140,28 L168,30 L196,20 L224,22 L260,12" fill="none" stroke="#9be8cb" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              <circle cx="260" cy="12" r="3" fill="#c8ffe6"/>
+            </svg>
+            <span>年度碳排趋势（示意）</span>
+          </div>
           <p id="hero-readiness">正在读取资料状态…</p><div class="console-bottom">百炼向量 · Chroma · DeepSeek · Python</div>
         </div>
       </section>
@@ -95,7 +115,7 @@
         <p>可载入一组明确标注的假设，查看方案计算和敏感性分析。假设与望月公寓资料分开，不能作为真实收益、报价或授权证明。</p>
         <div class="actions">
           <button id="load-assumptions" class="secondary-button" type="button">载入假设情景演示</button>
-          <button id="clear-case" class="secondary-button" type="button">清空当前输入与结果</button>
+          <button id="clear-case" class="danger-button" type="button">清空当前输入与结果</button>
         </div>
       </section>
       <div id="data-nature-banner" class="data-nature-banner" role="status" hidden></div>
@@ -134,63 +154,42 @@
             <p>用于识别适用的区域资料，并作为节省额与减碳量的计算基线。</p>
           </div>
           <p class="session-note">本页不自动保存草稿，也不把表单、照片和报告写入浏览器本地存储。刷新或关闭页面会丢失未导出的内容；云端调用会另行提示数据范围与费用。</p>
-          <div class="field-grid">
-            <label>
-              项目或建筑名称
-              <input id="project-name" type="text" autocomplete="off" placeholder="现场项目名称" />
-            </label>
-            <label>
-              所在地区 <span class="required">必填</span>
-              <input id="region" type="text" autocomplete="address-level1" placeholder="省 市 区县" required />
-            </label>
-            <label>
-              地址或现场备注
-              <input id="address" type="text" autocomplete="street-address" placeholder="可选" />
-            </label>
-            <label>
-              建筑年代
-              <input id="construction-year" type="number" min="1800" max="2100" inputmode="numeric" placeholder="例如：竣工年份" />
-            </label>
-            <label>
-              建筑面积（m²）
-              <input id="floor-area" type="number" min="0" step="0.01" inputmode="decimal" placeholder="可选；现场测量或图纸值" />
-            </label>
-            <label>
-              屋顶可用面积（m²）
-              <input id="roof-area" type="number" min="0" step="0.01" inputmode="decimal" placeholder="可选；用于光伏方案核验" />
-            </label>
-            <label>
-              年用电量（kWh） <span class="required">必填</span>
-              <input id="annual-electricity" type="number" min="0" step="0.01" inputmode="decimal" required placeholder="近12个月账单汇总" />
-            </label>
-            <label>
-              电价（元/kWh） <span class="required">必填</span>
-              <input id="electricity-price" type="number" min="0" step="0.0001" inputmode="decimal" required placeholder="适用电价" />
-            </label>
-            <label>
-              电价来源名称 <span class="required">必填</span>
-              <input id="electricity-price-source" type="text" required placeholder="文件或公告名称" />
-            </label>
-            <label>
-              电价来源链接或文件编号 <span class="required">必填</span>
-              <input id="electricity-price-url" type="text" required placeholder="https://… 或文件编号" />
-            </label>
-            <label>
-              电力排放因子（kgCO₂e/kWh） <span class="required">必填</span>
-              <input id="carbon-factor" type="number" min="0" step="0.000001" inputmode="decimal" required placeholder="适用区域与年份的因子" />
-            </label>
-            <label>
-              碳因子来源名称 <span class="required">必填</span>
-              <input id="carbon-source" type="text" required placeholder="报告或公告名称" />
-            </label>
-            <label>
-              碳因子来源链接或文件编号 <span class="required">必填</span>
-              <input id="carbon-url" type="text" required placeholder="https://… 或文件编号" />
-            </label>
-            <label>
-              数据基准日期 <span class="required">必填</span>
-              <input id="baseline-date" type="date" required />
-            </label>
+          <div class="wizard" id="base-wizard">
+            <div class="wizard-steps" role="tablist" aria-label="基线录入步骤">
+              <button type="button" class="wizard-step active" data-step="1" role="tab" aria-selected="true"><span class="wizard-step-num">1</span><span class="wizard-step-label">项目信息</span></button>
+              <button type="button" class="wizard-step" data-step="2" role="tab" aria-selected="false"><span class="wizard-step-num">2</span><span class="wizard-step-label">用电与电价</span></button>
+              <button type="button" class="wizard-step" data-step="3" role="tab" aria-selected="false"><span class="wizard-step-num">3</span><span class="wizard-step-label">碳因子与日期</span></button>
+            </div>
+            <div class="wizard-panel active" data-step="1" role="tabpanel">
+              <div class="field-grid">
+                <label>项目或建筑名称<input id="project-name" type="text" autocomplete="off" placeholder="现场项目名称" /></label>
+                <label>所在地区 <span class="required">必填</span><input id="region" type="text" autocomplete="address-level1" placeholder="省 市 区县" required /></label>
+                <label>地址或现场备注<input id="address" type="text" autocomplete="street-address" placeholder="可选" /></label>
+                <label>建筑年代<input id="construction-year" type="number" min="1800" max="2100" inputmode="numeric" placeholder="例如：竣工年份" /></label>
+                <label>建筑面积（m²）<input id="floor-area" type="number" min="0" step="0.01" inputmode="decimal" placeholder="可选；现场测量或图纸值" /></label>
+                <label>屋顶可用面积（m²）<input id="roof-area" type="number" min="0" step="0.01" inputmode="decimal" placeholder="可选；用于光伏方案核验" /></label>
+              </div>
+            </div>
+            <div class="wizard-panel" data-step="2" role="tabpanel" hidden>
+              <div class="field-grid">
+                <label>年用电量（kWh） <span class="required">必填</span><input id="annual-electricity" type="number" min="0" step="0.01" inputmode="decimal" required placeholder="近12个月账单汇总" /></label>
+                <label>电价（元/kWh） <span class="required">必填</span><input id="electricity-price" type="number" min="0" step="0.0001" inputmode="decimal" required placeholder="适用电价" /></label>
+                <label>电价来源名称 <span class="required">必填</span><input id="electricity-price-source" type="text" required placeholder="文件或公告名称" /></label>
+                <label>电价来源链接或文件编号 <span class="required">必填</span><input id="electricity-price-url" type="text" required placeholder="https://… 或文件编号" /></label>
+              </div>
+            </div>
+            <div class="wizard-panel" data-step="3" role="tabpanel" hidden>
+              <div class="field-grid">
+                <label>电力排放因子（kgCO₂e/kWh） <span class="required">必填</span><input id="carbon-factor" type="number" min="0" step="0.000001" inputmode="decimal" required placeholder="适用区域与年份的因子" /></label>
+                <label>碳因子来源名称 <span class="required">必填</span><input id="carbon-source" type="text" required placeholder="报告或公告名称" /></label>
+                <label>碳因子来源链接或文件编号 <span class="required">必填</span><input id="carbon-url" type="text" required placeholder="https://… 或文件编号" /></label>
+                <label>数据基准日期 <span class="required">必填</span><input id="baseline-date" type="date" required /></label>
+              </div>
+            </div>
+            <div class="wizard-nav">
+              <button type="button" class="secondary-button" id="wizard-prev" disabled>上一步</button>
+              <button type="button" class="primary-button" id="wizard-next">下一步</button>
+            </div>
           </div>
           <div class="photo-block">
             <div>
@@ -369,6 +368,18 @@
           <div id="validation" class="validation" aria-live="polite"></div>
           <p id="report-nature" class="data-nature-banner" hidden></p>
           <div id="summary" class="summary" hidden></div>
+          <div id="charts" class="charts" hidden>
+            <section class="chart-card" aria-label="方案净投资对比">
+              <h3>方案净投资对比</h3>
+              <p class="hint">各方案净投资（元），含「维持现状」基准。</p>
+              <div id="chart-investment" class="chart-host"></div>
+            </section>
+            <section class="chart-card" aria-label="15 年累计现金流">
+              <h3>15 年累计现金流（不折现）</h3>
+              <p class="hint">按年净收益不变的演示假设；不含折现、替换成本，不代表财务可研。</p>
+              <div id="chart-cashflow" class="chart-host"></div>
+            </section>
+          </div>
           <div id="sensitivity-results" class="policy-matches" hidden></div>
           <div id="policy-matches" class="policy-matches" hidden></div>
           <div class="table-wrap" id="result-table-wrap" hidden tabindex="0" role="region" aria-label="方案比选结果，可横向滚动">
@@ -416,7 +427,9 @@
         <button id="confirm-accept" class="primary-button" type="button">确认继续</button>
       </div>
     </dialog>
-    <script src="client-ui.js?v=0.6.2-r4.1"></script>
-    <script src="app.js?v=0.6.2-r4.1"></script>
+    <script src="client-ui.js?v=0.6.2-r4.2"></script>
+    <script src="app.js?v=0.6.2-r4.2"></script>
+    <script src="charts.js?v=0.6.2-r4.2"></script>
+    <script src="ux.js?v=0.6.2-r4.2"></script>
   </body>
 </html>

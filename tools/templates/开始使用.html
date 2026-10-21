@@ -9,10 +9,10 @@
 </style>
 </head>
 <body><main>
-<header><div class="tag">SHI ZAI REN WEI · WINDOWS LOCAL APPLICATION</div><h1>把完整方案带到你的电脑</h1><p>应用分发整理版 r4 · 2026-10-14；软件 API 版本 v0.6.2。先体验 Python 测算与固定假设方案，再按需配置自己的 API，建立真实 RAG 并生成新 PDF。</p></header>
+<header><div class="tag">SHI ZAI REN WEI · WINDOWS LOCAL APPLICATION</div><h1>把完整方案带到你的电脑</h1><p>应用分发整理版 r4 · 2026-10-21；软件 API 版本 v0.6.2。先体验 Python 测算与固定假设方案，再按需配置自己的 API，建立真实 RAG 并生成新 PDF。</p></header>
 <section class="note"><h2>先明确你下载的是什么</h2><p>这是<strong>源码型本地应用包</strong>，需要 Windows 64 位 Python 3.12，首次联网安装依赖；不是免安装 EXE，不是已经部署的公网服务。没有团队密钥、原机向量库、私人账单或签章。默认只监听本机。</p></section>
 <div class="grid">
-<section><h2>01 · 不花 API 费用，先看产品</h2><ol><li>右键 ZIP → <strong>全部解压</strong>，放入自己的可写目录。不要在 ZIP 预览中启动。</li><li>准备 Python 3.12（64 位）。安装方法见完整教程。</li><li>双击 <code>start-app.bat</code>，首次等待依赖安装。</li><li>保持启动窗口打开，看到 <code>Open http://… in your browser</code> 后打开该地址。默认 <code>http://127.0.0.1:8000/</code>。</li><li>载入“假设情景演示”并计算，查看比选、敏感性分析及 Python 结果。</li><li>点击“下载青禾示范方案 PDF”。它是固定假设案例，不随输入改变。</li></ol><p class="small">不要直接双击 index.html；file:// 页面不表示后端已启动。依赖安装失败时也不表示应用已启动。</p></section>
+<section><h2>01 · 不花 API 费用，先看产品</h2><ol><li>右键 ZIP → <strong>全部解压</strong>，放入自己的可写目录。不要在 ZIP 预览中启动。</li><li>准备 Python 3.12（64 位）。安装方法见完整教程。</li><li>双击 <code>start-app.bat</code>，首次等待依赖安装。</li><li>保持启动窗口打开，看到 <code>Open http://… in your browser</code> 后打开该地址。默认 <code>http://127.0.0.1:8000/</code>。</li><li>载入“假设情景演示”并计算，查看比选、敏感性分析、净投资条形图与现金流曲线及 Python 结果。</li><li>点击“下载青禾示范方案 PDF”。它是固定假设案例，不随输入改变。</li></ol><p class="small">不要直接双击 index.html；file:// 页面不表示后端已启动。依赖安装失败时也不表示应用已启动。若电脑开系统代理（如 Clash），先关闭再启动，否则百炼向量可能被截断。</p></section>
 <section><h2>02 · 配自己的账号，生成新方案</h2><ol><li>双击 <code>configure-keys.bat</code>，填写自己的 DeepSeek、百炼 Key 和对应空间 Base URL。</li><li>Key 只保存到本机 <code>backend/.env</code>。不要分享、截图或提交到 Git。</li><li>完全停止自己启动的旧服务，再重启；仅刷新网页不够。</li><li>按完整教程做连接检查及离线资料预检。</li><li>确认授权和费用后，显式选取三份公开资料真实入库；入库后重启。</li><li>核对真实 <code>rag_chunks &gt; 0</code>，完成计算输入后生成新 PDF。</li></ol><p class="small">百炼使用自己的 <code>https://…/compatible-mode/v1</code>，不是 /api/v1 或 /embeddings。Chroma 随依赖安装，不需要额外云数据库或 GPU。</p></section>
 </div>
 <section><h2>遇到启动问题</h2><p>在应用根目录的地址栏输入 powershell 后回车，可按需要执行以下命令。Python 路径须换成自己电脑上的真实路径。</p><pre>powershell -NoProfile -ExecutionPolicy Bypass -File .\start-app.ps1 -Port 18061

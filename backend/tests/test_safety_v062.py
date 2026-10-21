@@ -172,6 +172,23 @@ class SafetyV062Tests(unittest.TestCase):
             self.assertEqual(result.status_code, 200)
             agent.return_value.analyze_images.assert_called_once()
 
+    def test_vision_analysis_runs_in_threadpool_not_event_loop(self):
+        # 照片分析含最长 90 秒同步网络调用；必须移入线程池，否则阻塞全部请求。
+        import threading
+        captured: list[str] = []
+
+        def fake_analyze(images):
+            captured.append(threading.current_thread().name)
+            return {"requires_human_confirmation": True}
+
+        with patch("app.main.get_agent") as agent:
+            agent.return_value.analyze_images = fake_analyze
+            image = io.BytesIO(); Image.new("RGB", (4, 4)).save(image, "PNG")
+            result = self.client.post("/api/vision/analyze", files={"files": ("x.png", image.getvalue(), "image/png")})
+            self.assertEqual(result.status_code, 200)
+            self.assertTrue(captured)
+            self.assertNotIn("MainThread", captured[0], "照片分析仍在主线程同步执行")
+
     def test_query_requires_explicit_cloud_consent_before_initialization(self):
         with patch("app.main.get_agent") as agent:
             for flag in (None, False):

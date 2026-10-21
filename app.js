@@ -540,6 +540,7 @@ function setValidation(errors, message) {
 }
 
 function renderResults(report) {
+  window.__report = report; // 供 charts.js 等只读消费方读取精确数值（state 是模块级 const，不挂 window）
   $("report-nature").textContent = report.dataNature === "assumption" ? report.disclaimer : "用户录入数据尚需核验，计算通过不等于数据真实或工程可行。";
   $("report-nature").hidden = false;
   if (report.sensitivity) {

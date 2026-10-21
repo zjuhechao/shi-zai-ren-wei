@@ -16,13 +16,14 @@ from zipfile import ZIP_DEFLATED, ZipFile, ZipInfo
 
 
 VERSION = "0.6.2"
-FIXED_DATE = (2026, 10, 14, 0, 0, 0)
+FIXED_DATE = (2026, 10, 21, 0, 0, 0)
 TOP_LEVEL = "shi-zai-ren-wei-app-v" + VERSION
 MANIFEST_NAME = "application_manifest.sha256.json"
 
 ROOT_ALLOWLIST = {
     ".gitignore",
     "app.js", "client-ui.js", "index.html", "styles.css",
+    "charts.js", "ux.js", "ux.css",
     "启动演示.bat", "启动演示.ps1", "configure-keys.bat", "configure-keys.ps1",
     "backend/.env.example", "backend/run.py", "backend/requirements.txt",
     "backend/requirements-lock.windows-py312.txt",
@@ -125,7 +126,7 @@ def build_application(source: Path, templates: Path, output: Path) -> dict:
         "schema": "source-type-windows-application-sha256-v1",
         "application_version": VERSION,
         "package_revision": "r4",
-        "package_date": "2026-10-14",
+        "package_date": "2026-10-21",
         "platform": "Windows x64; Python 3.12 tested release route",
         "package_type": "source-type local application; Python runtime and dependencies not bundled",
         "repository": "https://github.com/zjuhechao/shi-zai-ren-wei",

@@ -1,10 +1,10 @@
 {
   "schema": "tracked-source-release-sha256-v2",
   "release_version": "0.6.2",
-  "release_date": "2026-10-14",
+  "release_date": "2026-10-21",
   "materials_revision": "r4",
-  "tracked_file_count": 86,
-  "hashed_file_count": 85,
+  "tracked_file_count": 93,
+  "hashed_file_count": 93,
   "excluded_paths": [
     "release_files.sha256.json"
   ],
@@ -21,19 +21,9 @@
       "sha256": "f70a1221fc8c16a10ff3847773cfd68bb16239c07637030d62ae5886dabd7ac5"
     },
     {
-      "path": "CHANGELOG.md",
-      "bytes": 2322,
-      "sha256": "f687c355a6a8d9753d4155ce684c934aa79691256eb4203031fae05b65cd6de8"
-    },
-    {
-      "path": "README.md",
-      "bytes": 16054,
-      "sha256": "6097f0f9a40322602a0fe55db8bf9d8af8a05e95448458b5f2cb0bbf2b43cf65"
-    },
-    {
       "path": "app.js",
-      "bytes": 62796,
-      "sha256": "8a9b28315100d7540e4b0fc0e39af0cd0f12b8b256eeb47cd1c0128fa2e839fa"
+      "bytes": 62924,
+      "sha256": "608dd19220fd6e90473c5196c5cbfd358f6b22d5c7830bd6fb3eca9d098067ab"
     },
     {
       "path": "assets/reports/qinghe_plan_demo.pdf",
@@ -44,11 +34,6 @@
       "path": "backend/.env.example",
       "bytes": 1075,
       "sha256": "8c920b1341369d7c12f37d1bb32babf8aa6cac8342f33be3323ddbd5fabe185d"
-    },
-    {
-      "path": "backend/README.md",
-      "bytes": 5563,
-      "sha256": "0a25b6a0bfca0e4b0fae6202da7d915f124083d83e1d3ce0c9f701c93ee7fa2c"
     },
     {
       "path": "backend/app/__init__.py",
@@ -87,13 +72,13 @@
     },
     {
       "path": "backend/app/main.py",
-      "bytes": 14565,
-      "sha256": "b009ddbadd4be54610a98c10d39b23bd777f81b47b217d5fcdbbe4994191b678"
+      "bytes": 15407,
+      "sha256": "326d27e1ef6c1015d003bca400dafb072584467eb5de5f2d03f9fe74ad7fed52"
     },
     {
       "path": "backend/app/plan_pdf.py",
-      "bytes": 26100,
-      "sha256": "2a6ae5d9270e304c529ed32e27d64050af252b0d36410ca3a1908d5c347120c9"
+      "bytes": 26080,
+      "sha256": "da2587cb7812cb8d8366dc95b789ecfe0b9e2127529e7da6753162a4268b0684"
     },
     {
       "path": "backend/app/plan_schemas.py",
@@ -124,6 +109,11 @@
       "path": "backend/app/schemas.py",
       "bytes": 2330,
       "sha256": "0b7316b6f5b44dc65ff28ff5b3a726cfc8334fa7df1881c3ce081aab310e09f1"
+    },
+    {
+      "path": "backend/README.md",
+      "bytes": 5563,
+      "sha256": "0a25b6a0bfca0e4b0fae6202da7d915f124083d83e1d3ce0c9f701c93ee7fa2c"
     },
     {
       "path": "backend/requirements-lock.windows-py312.txt",
@@ -211,6 +201,11 @@
       "sha256": "8172028379a2ebdeaf5c08a6720434e29b9018bf836d1d6f0404dc8f399ed22d"
     },
     {
+      "path": "backend/tests/test_frontend_alignment.py",
+      "bytes": 1157,
+      "sha256": "780edd521ca9a92425983bf1078ffdbcd3f1bdca481a74ea4d7d6a6decbbbb72"
+    },
+    {
       "path": "backend/tests/test_frontend_resilience.cjs",
       "bytes": 21230,
       "sha256": "7c667f9f5e465db1b4ebc1645c1c29304dfbef6a26c36e5468a61bc1f665d8cd"
@@ -227,8 +222,38 @@
     },
     {
       "path": "backend/tests/test_safety_v062.py",
-      "bytes": 21606,
-      "sha256": "6f4d515e66d338d5b857af776ac4cf423cd46243c3650d9fee38b3a9a9901495"
+      "bytes": 22501,
+      "sha256": "7777009eaf4c52b3c9c30ddfdc3c93fb1c238a16b3854a37776c647b79da3426"
+    },
+    {
+      "path": "backend/tests/verify_frontend_calc.cjs",
+      "bytes": 4769,
+      "sha256": "3d5fcc5c6159f40cccab1f023ee6c6a686aa178d069187ecd5f59e3f47b7947a"
+    },
+    {
+      "path": "backend/tests/verify_ui_enhance.cjs",
+      "bytes": 5199,
+      "sha256": "0518b406dbc20c9eef1dcf9e8d066e2bef18ba3c491309ddccbdcb865f216226"
+    },
+    {
+      "path": "backend/tests/verify_ui_visual.cjs",
+      "bytes": 4784,
+      "sha256": "1e44bc7af2afb775cf65fda20658597398c4093f91680858a4dd13f7412aa46f"
+    },
+    {
+      "path": "backend/tests/verify_ux_e2e.cjs",
+      "bytes": 4969,
+      "sha256": "c16be39337551062c5c77a52ab1a73d1494327f7a38d70a07a521a1f70d789bd"
+    },
+    {
+      "path": "CHANGELOG.md",
+      "bytes": 3774,
+      "sha256": "92b51a195a6ebc708fb29fbd0d9bff74c8f5966e8f02f9376f5f5906e33914fc"
+    },
+    {
+      "path": "charts.js",
+      "bytes": 5962,
+      "sha256": "d2fac8667871cdefa41cb705b1ec5e8bf01e50ff556496855926d6dc39a52463"
     },
     {
       "path": "client-ui.js",
@@ -261,11 +286,6 @@
       "sha256": "3a148473568b0539de650e4935dfe3e44c8bb8dad935061ce58be8018eeea5e4"
     },
     {
-      "path": "data/templates/README.md",
-      "bytes": 1523,
-      "sha256": "e75058dbe372a24be28e27d6950ddee9090b58b0f0657d51fdf3fc0a9e40b3fa"
-    },
-    {
       "path": "data/templates/carbon_factors.csv",
       "bytes": 139,
       "sha256": "c02c3706afe6b1f7420771ceea77aea7d7a0b8c063d62df6450b64bf99bea7f9"
@@ -291,6 +311,11 @@
       "sha256": "b6ed9cd9f5dd7d91acbcb011b618082eb9b64a4c3798b204f9f6d15315b748b4"
     },
     {
+      "path": "data/templates/README.md",
+      "bytes": 1523,
+      "sha256": "e75058dbe372a24be28e27d6950ddee9090b58b0f0657d51fdf3fc0a9e40b3fa"
+    },
+    {
       "path": "data/templates/solar_resources.csv",
       "bytes": 132,
       "sha256": "23568d0c218d68001ffd43068b190b94ce8d93451afcee0bbac6db5b4923efed"
@@ -301,14 +326,14 @@
       "sha256": "7c378f5749904c278b2b57940165c238e427bd43d3359d9b15427cb3c4c73ce5"
     },
     {
-      "path": "deploy/Dockerfile",
-      "bytes": 990,
-      "sha256": "f775ffc788d605ffa3f884c765ee0386bd89eab6ff0a9d03211802f6516d128e"
-    },
-    {
       "path": "deploy/compose.yaml",
       "bytes": 932,
       "sha256": "c73d5d792a9f0d1ade76248b2ca5241b3add54437d16929d085237c4f9edec2e"
+    },
+    {
+      "path": "deploy/Dockerfile",
+      "bytes": 990,
+      "sha256": "f775ffc788d605ffa3f884c765ee0386bd89eab6ff0a9d03211802f6516d128e"
     },
     {
       "path": "deploy/requirements.txt",
@@ -332,8 +357,8 @@
     },
     {
       "path": "docs/完善与验收_v0.6.2.md",
-      "bytes": 4292,
-      "sha256": "ff3a1946fdd11e027e3789f5417e264c9d641370727d0695f6a106d3c6493180"
+      "bytes": 6290,
+      "sha256": "f9ee1a3f7227bbb8c67901b367ab0fd6bfb2629a851cfdefa85d146c062e9b9f"
     },
     {
       "path": "docs/技术架构_v0.6.2.svg",
@@ -356,29 +381,34 @@
       "sha256": "6aa428c800c5855b03bca45b5a917a827c1b4591e242b5c460fb84b5361138ee"
     },
     {
-      "path": "downloads/README.md",
-      "bytes": 3161,
-      "sha256": "7dfaccc4352b4d532343e4ca5a99af3ce62241f65dec865d810586df85b25407"
+      "path": "downloads/app-windows-v0.6.2.zip",
+      "bytes": 1763775,
+      "sha256": "16d701b864cbe2d3e7856f84b5a9319daa78c5db0e77078efce2f200176081e5"
     },
     {
-      "path": "downloads/app-windows-v0.6.2.zip",
-      "bytes": 1750995,
-      "sha256": "afbaf4b412a9892f99cd4de2ce9943979a440f78521761266af070c006090c34"
+      "path": "downloads/README.md",
+      "bytes": 3180,
+      "sha256": "b5309703bca4125d68ec4b5c3334c38abca5b07a8c8bdd14677bb545c285a8ba"
     },
     {
       "path": "index.html",
-      "bytes": 27373,
-      "sha256": "16dad9545f80a9d9bd8da629c839172528ce341e83c83479549fda53aca372b0"
+      "bytes": 30752,
+      "sha256": "9e83a8897f2a16ba74524ffd994c83e56813cf32238f7780fad4df1104cc4dcb"
+    },
+    {
+      "path": "README.md",
+      "bytes": 16459,
+      "sha256": "159b1dc8d5bdca6f961e172bee9c401756f8dbb57b3952cbdc8ff5b9c78ec16d"
     },
     {
       "path": "styles.css",
-      "bytes": 20742,
-      "sha256": "6fa6c7a754770f1d34611cf8db076c12b0e42c86fdf184a505c320d581850ee6"
+      "bytes": 28476,
+      "sha256": "b93dfa246e6acc807de600fc975a0bb6869bbf09e68cf46e7b9ef66d3e5967f6"
     },
     {
       "path": "tools/build_application.py",
-      "bytes": 13110,
-      "sha256": "4b8dad0da4fb19503cf3dfe863c4fce448651fea5a48f2905d722c4a0aba9145"
+      "bytes": 13146,
+      "sha256": "33dd07727764678d1d9f24c75e3050f5ce1a55e5b867ae6cd60f379990aec695"
     },
     {
       "path": "tools/templates/start-app.bat",
@@ -392,18 +422,28 @@
     },
     {
       "path": "tools/templates/开始使用.html",
-      "bytes": 6453,
-      "sha256": "5e14e00677daf0555de9d63ee04f739cb3497a7d7997d010dcc77ddb36630894"
+      "bytes": 6591,
+      "sha256": "1ad4f478345ec831107ed55408676fbc42967ec0fb3909de67da27b69aa09aa7"
     },
     {
       "path": "tools/templates/开始使用.txt",
-      "bytes": 4311,
-      "sha256": "ce7b948efefa7144145a5da9be8bdc64416bf0bf8d5021611090c6565b6aeb23"
+      "bytes": 4561,
+      "sha256": "44f092320826817b21a26b2f9562fc2379530e5a81f1a6f60b69a400ef5dd30f"
     },
     {
       "path": "tools/update_source_manifest.py",
       "bytes": 3005,
       "sha256": "c0ebcfad2f767f98d8cbb8816262749e5c29157b9118f4d985ff8d1138c7bfca"
+    },
+    {
+      "path": "ux.css",
+      "bytes": 4456,
+      "sha256": "7bafaed78cbf19d8b3f756d4a45c8fb491706252df2401565ebf80e9e81dd163"
+    },
+    {
+      "path": "ux.js",
+      "bytes": 13448,
+      "sha256": "494c7459234379464162f4385a89c1ab8460b644e948c498b0a237c637f6ce74"
     },
     {
       "path": "启动演示.bat",

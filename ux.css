@@ -1,0 +1,65 @@
+/* 客户体验增强层样式：进度仪表盘、底部悬浮栏、字段级校验、toast、滚动定位。
+   全部使用浅色主题、与主站墨绿 token 体系一致，可随主站媒体查询响应。
+   依赖 styles.css 中定义的 CSS 变量（--accent 等）。 */
+[hidden] { display: none !important; }
+
+/* ── 顶部进度仪表盘 ─────────────────────────────────────────────── */
+.ux-progress {
+  margin: 0 0 1.4rem;
+  padding: 1rem 1.2rem;
+  background: var(--paper, #fff);
+  border: 1px solid var(--line, #d8e2e7);
+  border-radius: var(--r-lg, 14px);
+  box-shadow: var(--shadow-sm, 0 1px 2px rgba(26, 55, 70, 0.05));
+}
+.ux-progress-head { display: flex; justify-content: space-between; align-items: baseline; gap: 1rem; margin-bottom: 0.5rem; }
+.ux-progress-title { font-weight: 700; color: var(--ink, #183246); font-size: 0.9rem; }
+.ux-progress-count { color: var(--accent, #007a78); font-weight: 700; font-size: 0.85rem; font-variant-numeric: tabular-nums; }
+.ux-progress-track { height: 8px; border-radius: var(--r-pill, 999px); background: #e6eef0; overflow: hidden; }
+.ux-progress-fill { height: 100%; width: 0; border-radius: var(--r-pill, 999px); background: linear-gradient(90deg, var(--accent-soft, #67b9a8), var(--accent, #007a78)); transition: width 0.35s ease; }
+.ux-progress-fill.complete { background: linear-gradient(90deg, #2fa17f, var(--accent, #007a78)); }
+.ux-progress-note { margin: 0.5rem 0 0; color: var(--muted, #5d6f7b); font-size: 0.78rem; }
+.ux-progress-note.ok { color: var(--success, #075f4a); }
+
+/* ── 底部悬浮操作栏 ─────────────────────────────────────────────── */
+.ux-dock {
+  position: fixed; left: 50%; bottom: 1.2rem; transform: translateX(-50%) translateY(140%);
+  display: flex; align-items: center; gap: 1rem; z-index: 40;
+  padding: 0.7rem 0.9rem 0.7rem 1.1rem; max-width: calc(100vw - 2rem);
+  background: rgba(17, 63, 65, 0.97); color: #eaf7f1; border-radius: var(--r-pill, 999px);
+  box-shadow: var(--shadow-lg, 0 18px 44px rgba(26, 55, 70, 0.14)); backdrop-filter: blur(10px);
+  transition: transform 0.3s ease;
+}
+.ux-dock.visible { transform: translateX(-50%) translateY(0); }
+.ux-dock-label { font-size: 0.8rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 46vw; }
+.ux-dock-actions { display: flex; gap: 0.5rem; flex-shrink: 0; }
+.ux-dock-btn {
+  border: 1px solid rgba(185, 239, 214, 0.5); background: transparent; color: #b9efd6;
+  border-radius: var(--r-pill, 999px); padding: 0.32rem 0.8rem; font-size: 0.78rem; font-weight: 600; cursor: pointer;
+}
+.ux-dock-btn:hover { background: rgba(185, 239, 214, 0.16); }
+
+/* ── 导航条当前区块高亮 ─────────────────────────────────────────── */
+.page-nav a.active { color: var(--accent-dark, #005e5c); background: var(--pale-deep, #dff2ec); font-weight: 700; }
+
+/* ── 字段级校验提示 ─────────────────────────────────────────────── */
+.ux-invalid { border-color: #c96a6a !important; background: #fff8f8 !important; }
+.ux-field-msg { display: block; color: var(--danger, #a02929); font-size: 0.74rem; font-weight: 500; margin-top: 0.15rem; min-height: 1em; }
+
+/* ── toast ──────────────────────────────────────────────────────── */
+.ux-toast {
+  position: fixed; left: 50%; bottom: 5.2rem; transform: translateX(-50%) translateY(140%);
+  z-index: 60; padding: 0.75rem 1.2rem; border-radius: 12px; max-width: calc(100vw - 2rem);
+  background: #113f41; color: #eaf7f1; font-size: 0.86rem; box-shadow: var(--shadow-lg, 0 18px 44px rgba(26, 55, 70, 0.14));
+  transition: transform 0.3s ease, opacity 0.3s ease; opacity: 0;
+}
+.ux-toast.show { transform: translateX(-50%) translateY(0); opacity: 1; }
+.ux-toast.warn { background: #8a5a13; }
+
+@media (max-width: 600px) {
+  .ux-dock-label { max-width: 40vw; font-size: 0.72rem; }
+  .ux-dock-btn { padding: 0.3rem 0.6rem; font-size: 0.72rem; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .ux-progress-fill, .ux-dock, .ux-toast { transition: none; }
+}

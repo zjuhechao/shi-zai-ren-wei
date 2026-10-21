@@ -298,7 +298,7 @@ def render_plan_pdf(plan:dict)->bytes:
         block_start=len(story)
         heading(source['reference_id']+'  '+str(source['title']))
         para(f"文档编号：{source['document_id']}；版本：{source.get('version') or '未标注'}；地区：{source.get('region') or '未标注'}")
-        status={'unverified':'有效性待核实','active_by_dates':'仅登记日期区间有效','expired':'登记日期已到期','not_yet_effective':'登记尚未生效'}.get(source.get('validity_status'),str(source.get('validity_status') or '未登记'))
+        status={'unverified':'有效性待核实','within_recorded_interval':'登记日期区间内','outside_recorded_interval':'登记日期区间外'}.get(source.get('validity_status'),str(source.get('validity_status') or '未登记'))
         para(f"登记生效：{source.get('effective_from') or '缺失'}；登记失效：{source.get('effective_to') or '缺失'}；核对状态：{status}；{'模型候选引用，适用性待复核' if source['reference_id'] in cited else '检索命中，仅列为核查线索'}")
         url=str(source.get('source_url') or '')
         if urlsplit(url).scheme in {'http','https'}:
